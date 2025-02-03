@@ -2,37 +2,56 @@ version: "3.9"
 
 services:
 
-  hello:
-    image: hello-world
-
-  cowsay:
-    image: xshell/cowsay
-    command: ['cowsay', 'wooooooooow']
-
-  whalesay:
-    image: docker/whalesay
-    command: ['cowsay', 'weeeeeeeeee']
-
-  redis:
-    image: redis:latest
-    restart: unless-stopped
+  dockerhttp:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "6379:6379"
-    #volumes:
-    #  - './data/redis:/data'
-    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
-
-
-  database:
-    image: mariadb:latest
-    restart: unless-stopped
-    ports:
-      - "3307:3306"
-    #volumes:
-    #  - ./data/mariadb/mysql:/var/lib/mysql
-    #  - ./data/mariadb/initdb.d/:/docker-entrypoint-initdb.d/
+      - "5000:5000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      #- /usr/local/bin/docker2:/usr/bin/docker:ro
+      #- /usr/local/bin/docker-compose:/usr/bin/docker-compose:ro
+      - ./data:/app/data
+    privileged: true
+    user: root
     environment:
-      - MYSQL_ROOT_PASSWORD=docker
-      - MYSQL_PASSWORD=docker
-      - MYSQL_USER=docker
-      - MYSQL_DATABASE=docker
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - DOCKERHTTP_HOST=0.0.0.0
+      - DOCKERHTTP_PORT=5000
+      - DOCKERHTTP_DATA_DIR=/app/data
+
+#  hello:
+#    image: hello-world
+#
+#  cowsay:
+#    image: xshell/cowsay
+#    command: ['cowsay', 'wooooooooow']
+#
+#  whalesay:
+#    image: docker/whalesay
+#    command: ['cowsay', 'weeeeeeeeee']
+#
+#  redis:
+#    image: redis:latest
+#    restart: unless-stopped
+#    ports:
+#      - "6379:6379"
+#    #volumes:
+#    #  - './data/redis:/data'
+#    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+#
+#
+#  database:
+#    image: mariadb:latest
+#    restart: unless-stopped
+#    ports:
+#      - "3307:3306"
+#    #volumes:
+#    #  - ./data/mariadb/mysql:/var/lib/mysql
+#    #  - ./data/mariadb/initdb.d/:/docker-entrypoint-initdb.d/
+#    environment:
+#      - MYSQL_ROOT_PASSWORD=docker
+#      - MYSQL_PASSWORD=docker
+#      - MYSQL_USER=docker
+#      - MYSQL_DATABASE=docker

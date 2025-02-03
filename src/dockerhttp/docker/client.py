@@ -10,7 +10,7 @@ class DockerMgmtClient:
 
     def __init__(self, base_url: str = None):
         if base_url is None:
-            self.docker = docker.from_env()
+            self.docker = docker.from_env(use_ssh_client=True)
         else:
             self.docker = docker.DockerClient(base_url=base_url)
 
@@ -116,5 +116,26 @@ class DockerMgmtClient:
             container.restart()
         return all_containers
 
+
     def container_exists(self, key):
         return True if self.docker.containers.get(key) else False
+
+
+    def list_volumes(self):
+        """
+        Get Volumes
+
+        :return: Dictionary [id, tags, labels]
+        """
+        all_volumes = self.docker.volumes.list()
+        return all_volumes
+
+
+    def list_networks(self):
+        """
+        Get Networks
+
+        :return: Dictionary [id, tags, labels]
+        """
+        all_networks = self.docker.networks.list()
+        return all_networks

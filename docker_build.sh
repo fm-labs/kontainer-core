@@ -15,7 +15,7 @@ if [[ $1 == "--release" ]]; then
   shift
 fi
 
-if ! docker build -t ${TAGNAME}:latest .
+if ! docker build -t ${TAGNAME}:latest --progress=plain .
 then
   echo "DOCKER BUILD FAILED"
   exit 1
