@@ -42,8 +42,8 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.REPO_NAME }}:${{ github.ref_name }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.REPO_NAME }}:latest
           # Caching
-          cache-from: type=gha
-          cache-to: type=gha,mode=max`
+          #cache-from: type=gha
+          #cache-to: type=gha,mode=max`
 
 
 #    - name: Build, tag, and push image to Docker Hub
