@@ -1,3 +1,14 @@
+---
+# This workflow will build a Docker image and push it to Docker Hub
+#
+# Required repo secrets:
+# - DOCKERHUB_USERNAME
+# - DOCKERHUB_TOKEN
+#
+# Required repo variables:
+# - DOCKERHUB_REPONAME
+
+
 name: Publish image to Docker Hub
 
 on:
@@ -5,8 +16,8 @@ on:
     tags:
       - "*"
 
-env:
-  REPO_NAME: kstack-agent
+#env:
+#  REPO_NAME: kstack-agent
 
 jobs:
   publish:
@@ -36,8 +47,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ github.ref_name }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPONAME }}:${{ github.ref_name }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPONAME }}:latest
           # Caching
           #cache-from: type=gha
           #cache-to: type=gha,mode=max`
