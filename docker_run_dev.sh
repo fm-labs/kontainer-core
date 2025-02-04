@@ -1,8 +1,11 @@
 #!/bin/bash
 
+docker stop kstack-agent-dev
+docker rm kstack-agent-dev
+
 source ./docker_build.sh
 
-docker run -d \
+docker run \
   --name kstack-agent-dev \
   --privileged \
   -v /var/run/docker.sock:/var/run/docker.sock \

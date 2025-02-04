@@ -20,11 +20,13 @@ services:
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
       - AGENT_HOST=0.0.0.0
-      - AGENT_PORT=5000
-      - AGENT_DATA_DIR=/app/data
-    labels:
-      - "kstack.agent=true"
-      - "kstack.protected=true"
+      #- AGENT_PORT=5000
+      #- AGENT_DATA_DIR=/app/data
+    healthcheck:
+      test: curl --fail -s http://localhost:5000/ || exit 1
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
 
 #  hello:
 #    image: hello-world

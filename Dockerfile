@@ -39,6 +39,10 @@ COPY ./src /app/src
 COPY ./agent.py /app/agent.py
 #COPY ./README.md /app/README.md
 
+ENV AGENT_HOST=0.0.0.0
+ENV AGENT_PORT=5000
+
+HEALTHCHECK CMD curl --fail http://localhost:5000/ || exit 1
 CMD ["python", "/app/agent.py"]
 
 EXPOSE 5000
