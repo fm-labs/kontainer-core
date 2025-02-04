@@ -1,7 +1,6 @@
 from flask import jsonify
 
-from kstack.agent.server.app import app, dk
-
+from .app import app, dk
 
 @app.route('/volumes', methods=["GET"])
 def list_volumes():

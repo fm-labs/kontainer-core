@@ -1,8 +1,7 @@
 import os
 import subprocess
 
-from kstack.agent.server import settings
-
+from .. import settings
 
 class DockerComposeProject:
     def __init__(self, key, name, data=None):

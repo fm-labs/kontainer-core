@@ -4,9 +4,9 @@ import json
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-from kstack.agent.projects.projectmanager import ProjectManager, DockerComposeProject
-from kstack.agent.docker.client import DockerMgmtClient
-from kstack.agent.server.settings import AGENT_COMPOSE_DIR
+from ..projects.projectmanager import ProjectManager, DockerComposeProject
+from ..docker.client import DockerMgmtClient
+from ..settings import AGENT_COMPOSE_DIR
 
 # CLASSES
 docker_host = os.getenv("DOCKER_HOST", "unix:///var/run/docker.sock")

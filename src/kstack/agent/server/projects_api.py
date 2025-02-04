@@ -1,8 +1,8 @@
 
 from flask import jsonify
 
-from kstack.agent.projects.projectmanager import ProjectManager
-from kstack.agent.server.app import app
+from ..projects.projectmanager import ProjectManager
+from .app import app
 
 
 @app.route('/projects', methods=["GET"])

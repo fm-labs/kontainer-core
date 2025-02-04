@@ -1,10 +1,9 @@
-import os
 import sys
 
 sys.path.append("./src")
 
 from kstack.agent.server.app import app
-from kstack.agent.server import settings
+from kstack.agent import settings
 
 if __name__ == '__main__':
     #host = os.getenv("AGENT_HOST", "127.0.0.1")
