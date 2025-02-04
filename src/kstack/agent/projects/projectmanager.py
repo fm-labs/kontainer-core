@@ -11,7 +11,7 @@ class DockerComposeProject:
         self.data = data
 
     def start(self):
-        project_dir = os.path.join(settings.DOCKERHTTP_COMPOSE_DIR, self.key)
+        project_dir = os.path.join(settings.AGENT_COMPOSE_DIR, self.key)
         print(f"Starting project {self.key} in {project_dir}")
 
         # Run docker compose up
@@ -23,7 +23,7 @@ class DockerComposeProject:
             raise e
 
     def stop(self):
-        project_dir = os.path.join(settings.DOCKERHTTP_COMPOSE_DIR, self.key)
+        project_dir = os.path.join(settings.AGENT_COMPOSE_DIR, self.key)
         print(f"Stopping project {self.key} in {project_dir}")
 
         # Run docker compose stop
@@ -35,7 +35,7 @@ class DockerComposeProject:
             raise e
 
     def remove(self):
-        project_dir = os.path.join(settings.DOCKERHTTP_COMPOSE_DIR, self.key)
+        project_dir = os.path.join(settings.AGENT_COMPOSE_DIR, self.key)
         print(f"Removing project {self.key} in {project_dir}")
 
         # Run docker compose stop
@@ -47,7 +47,7 @@ class DockerComposeProject:
             raise e
 
     def restart(self):
-        project_dir = os.path.join(settings.DOCKERHTTP_COMPOSE_DIR, self.key)
+        project_dir = os.path.join(settings.AGENT_COMPOSE_DIR, self.key)
         print(f"Restarting project {self.key} in {project_dir}")
 
         # Run docker compose restart

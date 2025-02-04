@@ -6,7 +6,7 @@ from flask_cors import CORS
 
 from kstack.agent.projects.projectmanager import ProjectManager, DockerComposeProject
 from kstack.agent.docker.client import DockerMgmtClient
-from kstack.agent.server.settings import DOCKERHTTP_COMPOSE_DIR
+from kstack.agent.server.settings import AGENT_COMPOSE_DIR
 
 # CLASSES
 docker_host = os.getenv("DOCKER_HOST", "unix:///var/run/docker.sock")
@@ -18,9 +18,9 @@ dk = DockerMgmtClient(docker_host)
 # if they have a docker-compose.yml file, create a project from the file
 # if they have both, load the project from the project.json file and update it with the docker-compose.yml file
 # if they have neither, ignore the directory
-os.makedirs(DOCKERHTTP_COMPOSE_DIR, exist_ok=True)
-for project in os.listdir(DOCKERHTTP_COMPOSE_DIR):
-    project_dir = os.path.join(DOCKERHTTP_COMPOSE_DIR, project)
+os.makedirs(AGENT_COMPOSE_DIR, exist_ok=True)
+for project in os.listdir(AGENT_COMPOSE_DIR):
+    project_dir = os.path.join(AGENT_COMPOSE_DIR, project)
     if os.path.isdir(project_dir):
         project_json = os.path.join(project_dir, "project.json")
         docker_compose = os.path.join(project_dir, "docker-compose.yml")

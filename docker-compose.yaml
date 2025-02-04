@@ -18,9 +18,9 @@ services:
     user: root
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - DOCKERHTTP_HOST=0.0.0.0
-      - DOCKERHTTP_PORT=5000
-      - DOCKERHTTP_DATA_DIR=/app/data
+      - AGENT_HOST=0.0.0.0
+      - AGENT_PORT=5000
+      - AGENT_DATA_DIR=/app/data
     labels:
       - "kstack.agent=true"
       - "kstack.protected=true"

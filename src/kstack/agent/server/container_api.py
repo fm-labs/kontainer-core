@@ -38,7 +38,7 @@ def stop_container(key):
 
 @app.route('/container/remove/<string:key>', methods=["POST"])
 def remove_container(key):
-    if settings.DOCKERHTTP_ENABLE_DELETE:
+    if settings.AGENT_ENABLE_DELETE:
         return jsonify(dk.remove_container(key).attrs)
 
     return jsonify(dk.remove_container(key).attrs)
