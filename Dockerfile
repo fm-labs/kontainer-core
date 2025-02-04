@@ -44,8 +44,8 @@ RUN pip install poetry && poetry config virtualenvs.create false && poetry insta
 # Copy the rest of the code
 COPY ./src /app/src
 COPY ./README.md /app/README.md
-COPY ./docker-http.py /app/docker-http.py
+COPY ./agent.py /app/agent.py
 
-CMD ["python", "/app/docker-http.py"]
+CMD ["python", "/app/agent.py"]
 
 EXPOSE 5000

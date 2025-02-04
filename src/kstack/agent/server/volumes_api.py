@@ -1,6 +1,6 @@
 from flask import jsonify
 
-from dockerhttp.server.app import app, dk
+from kstack.agent.server.app import app, dk
 
 
 @app.route('/volumes', methods=["GET"])

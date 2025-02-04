@@ -2,4 +2,4 @@
 
 docker run -it \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
-  docker-http
+  kstack-agent

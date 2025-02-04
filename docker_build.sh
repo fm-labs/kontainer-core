@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-TAGNAME=docker-http
+TAGNAME=kstack-agent
 REGISTRY=fmlabs
 
 VERSION=0.0.0

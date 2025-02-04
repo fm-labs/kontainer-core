@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "docker-http"
+name = "kstack-agent"
 version = "0.1.0"
 description = ""
 authors = ["fm-labs <flowmotionlabs@gmail.com>"]
@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 flask = "^3.0.0"
-flask-cors = "^4.0.0"
+flask-cors = "^5.0.0"
 docker = "^7.0.0"
 paramiko = "^3.5.0"
 

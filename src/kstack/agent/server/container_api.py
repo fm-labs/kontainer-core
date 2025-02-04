@@ -1,7 +1,7 @@
 from flask import jsonify
 
-from dockerhttp.server import settings
-from dockerhttp.server.app import app, dk
+from kstack.agent.server import settings
+from kstack.agent.server.app import app, dk
 
 
 @app.route('/containers', methods=["GET"])

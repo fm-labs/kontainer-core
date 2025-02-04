@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-from dockerhttp.server import settings
+from kstack.agent.server import settings
 
 
 class DockerComposeProject:

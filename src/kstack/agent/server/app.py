@@ -4,9 +4,9 @@ import json
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-from dockerhttp.projects.projectmanager import ProjectManager, DockerComposeProject
-from dockerhttp.docker.client import DockerMgmtClient
-from dockerhttp.server.settings import DOCKERHTTP_COMPOSE_DIR
+from kstack.agent.projects.projectmanager import ProjectManager, DockerComposeProject
+from kstack.agent.docker.client import DockerMgmtClient
+from kstack.agent.server.settings import DOCKERHTTP_COMPOSE_DIR
 
 # CLASSES
 docker_host = os.getenv("DOCKER_HOST", "unix:///var/run/docker.sock")
@@ -39,11 +39,11 @@ for project in os.listdir(DOCKERHTTP_COMPOSE_DIR):
 app = Flask(__name__)
 CORS(app)
 
-from dockerhttp.server.container_api import *
-from dockerhttp.server.images_api import *
-from dockerhttp.server.volumes_api import *
-from dockerhttp.server.networks_api import *
-from dockerhttp.server.projects_api import *
+from kstack.agent.server.container_api import *
+from kstack.agent.server.images_api import *
+from kstack.agent.server.volumes_api import *
+from kstack.agent.server.networks_api import *
+from kstack.agent.server.projects_api import *
 
 @app.route('/', methods=["GET"])
 def index():

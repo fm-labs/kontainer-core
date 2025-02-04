@@ -1,8 +1,8 @@
 
 from flask import jsonify
 
-from dockerhttp.projects.projectmanager import ProjectManager
-from dockerhttp.server.app import app
+from kstack.agent.projects.projectmanager import ProjectManager
+from kstack.agent.server.app import app
 
 
 @app.route('/projects', methods=["GET"])

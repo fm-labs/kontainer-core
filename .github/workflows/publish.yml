@@ -6,7 +6,7 @@ on:
       - "*"
 
 env:
-  REPO_NAME: docker-http
+  REPO_NAME: kstack-agent
 
 jobs:
   publish:

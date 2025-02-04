@@ -3,8 +3,8 @@ import sys
 
 sys.path.append("./src")
 
-from dockerhttp.server.app import app
-from dockerhttp.server import settings
+from kstack.agent.server.app import app
+from kstack.agent.server import settings
 
 if __name__ == '__main__':
     #host = os.getenv("DOCKERHTTP_HOST", "127.0.0.1")
