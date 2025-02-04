@@ -4,9 +4,10 @@ version = "0.1.0"
 description = ""
 authors = ["fm-labs <flowmotionlabs@gmail.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.14"
 flask = "^3.0.0"
 flask-cors = "^5.0.0"
 docker = "^7.0.0"
