@@ -23,7 +23,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
 
-    - name: Checkout repo with submodules
+    - name: Checkout repo
       uses: actions/checkout@v4
 
 
@@ -34,7 +34,14 @@ jobs:
         IMAGE_TAG: ${{ github.ref_name }}
         REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
       run: |
-        docker build -t $REGISTRY/$REPO_NAME:$IMAGE_TAG .
+        #docker build -t $REGISTRY/$REPO_NAME:$IMAGE_TAG .
+        
+        docker buildx build \
+          --platform=linux/amd64,linux/arm64 \
+          -f ./Dockerfile \
+          -t $REGISTRY/$REPO_NAME:$IMAGE_TAG \
+          .
+        
         docker push $REGISTRY/$REPO_NAME:$IMAGE_TAG
         
         docker tag $REGISTRY/$REPO_NAME:$IMAGE_TAG $REGISTRY/$REPO_NAME:latest
