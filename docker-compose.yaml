@@ -2,12 +2,13 @@ version: "3.9"
 
 services:
 
-  kstack.agent:
+  kstack-agent:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
+    restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       #- /usr/local/bin/docker:/usr/bin/docker:ro
@@ -20,6 +21,9 @@ services:
       - DOCKERHTTP_HOST=0.0.0.0
       - DOCKERHTTP_PORT=5000
       - DOCKERHTTP_DATA_DIR=/app/data
+    labels:
+      - "kstack.agent=true"
+      - "kstack.protected=true"
 
 #  hello:
 #    image: hello-world
