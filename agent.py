@@ -2,7 +2,7 @@ import sys
 
 sys.path.append("./src")
 
-from kstack.agent.server.app import app
+from kstack.agent.app import app
 from kstack.agent import settings
 
 if __name__ == '__main__':
