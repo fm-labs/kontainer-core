@@ -1,10 +1,12 @@
+import flask
 from flask import jsonify
 
-from .app import app, dk
+from ..dkr import dkr
 
+def images_api(app: flask.app.Flask):
 
-@app.route('/images', methods=["GET"])
-def list_images():
-    images = dk.list_images()
-    mapped = list(map(lambda x: x.attrs, images))
-    return jsonify(mapped)
+    @app.route('/images', methods=["GET"])
+    def list_images():
+        images = dkr.list_images()
+        mapped = list(map(lambda x: x.attrs, images))
+        return jsonify(mapped)

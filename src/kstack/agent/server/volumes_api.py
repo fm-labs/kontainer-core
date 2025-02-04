@@ -1,9 +1,12 @@
+import flask
 from flask import jsonify
 
-from .app import app, dk
+from ..dkr import dkr
 
-@app.route('/volumes', methods=["GET"])
-def list_volumes():
-    volumes = dk.list_volumes()
-    mapped = list(map(lambda x: x.attrs, volumes))
-    return jsonify(mapped)
+def volumes_api(app: flask.app.Flask):
+
+    @app.route('/volumes', methods=["GET"])
+    def list_volumes():
+        volumes = dkr.list_volumes()
+        mapped = list(map(lambda x: x.attrs, volumes))
+        return jsonify(mapped)
