@@ -2,10 +2,11 @@ version: "3.9"
 
 services:
 
-  kstack-agent:
+  agent:
     build:
       context: .
       dockerfile: Dockerfile
+    image: kstack-agent:latest
     ports:
       - "5000:5000"
     restart: always
@@ -13,7 +14,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       #- /usr/local/bin/docker:/usr/bin/docker:ro
       #- /usr/local/bin/docker-compose:/usr/bin/docker-compose:ro
-      - ./data:/app/data
+      - kstack_agent_data:/app/data
     privileged: true
     user: root
     environment:
@@ -59,3 +60,6 @@ services:
 #      - MYSQL_PASSWORD=docker
 #      - MYSQL_USER=docker
 #      - MYSQL_DATABASE=docker
+
+volumes:
+  kstack_agent_data:

@@ -1,8 +1,9 @@
 #!/bin/bash
 
+source ./docker_build.sh
+
 docker run -d \
-  --name kstack-agent \
-  --restart always \
+  --name kstack-agent-dev \
   --privileged \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v kstack_agent_data:/app/data \
@@ -10,4 +11,4 @@ docker run -d \
   -e AGENT_HOST=0.0.0.0 \
   -e AGENT_PORT=5000 \
   -e AGENT_DATA_DIR=/app/data \
-  fmlabs/kstack-agent:latest
+  kstack-agent:latest
