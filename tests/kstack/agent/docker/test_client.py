@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import requests
 
-from kstack.agent.docker.client import DockerMgmtClient
+from kstack.agent.docker.client import DockerManager
 
 
 class TestDockerMgmtClient(TestCase):
@@ -17,7 +17,7 @@ class TestDockerMgmtClient(TestCase):
 
     def test_list_containers(self):
 
-        test_client = DockerMgmtClient()
+        test_client = DockerManager()
         result = test_client.list_containers()
         self.assertIsNotNone(result)
 

@@ -17,6 +17,10 @@ docker run -d \
   fmlabs/kstack-agent:latest
 ```
 
+```bash
+# Download docker_run.sh from github repository and invoke with bash
+curl -s https://raw.githubusercontent.com/fm-labs/kstack-agent/main/docker_run.sh | bash
+```
 
 ## Development
 
@@ -29,7 +33,64 @@ potry run python ./agent.py
 
 The kstack-agent REST api server is served at `http://localhost:5000/` by default.
 
+## Features
 
+- [x] Containers
+  - [x] List containers
+  - [x] Start container
+  - [x] Pause container
+  - [x] Unpause container (Start)
+  - [x] Stop container
+  - [x] Restart container
+  - [x] Remove container
+  - [x] Inspect container
+  - [ ] View logs
+  - [x] View logstream (api, websocket)
+  - [ ] Execute command
+  - [x] Execute command in interactive shell (3rd-party, websocket)
+- [ ] Images
+  - [x] List images
+  - [ ] Pull image
+  - [x] Remove image
+  - [x] Get/Inspect image
+- [ ] Networks
+  - [x] List networks
+  - [x] Get/Inspect network
+- [x] Volumes
+  - [x] List volumes
+  - [x] Get/Inspect volume
+- [ ] Compose Stacks
+  - [ ] List compose stacks
+    - [ ] List compose stacks from container labels
+    - [ ] List compose stacks from registered repositories
+    - [ ] List compose stacks from local compose files
+  - [ ] Inspect compose stack
+  - [ ] Start compose stack (compose up)
+  - [ ] Stop compose stack (compose stop)
+  - [ ] Teardown compose stack (compose down)
+  - [ ] Add compose stack
+    - [ ] Add stack from compose file
+    - [ ] Add stack from github repository
+- [ ] Secrets
+  - [ ] List secrets
+  - [ ] Inspect secret
+  - [ ] Add secret
+- [ ] Swarm
+  - [ ] List nodes
+  - [ ] Inspect node
+  - [ ] Join swarm
+  - [ ] Leave swarm
+- [ ] System
+  - [ ] Info
+  - [ ] Prune unused resources
+
+- [ ] Low-level docker command invocation
+  - [ ] docker top
+  - [ ] docker ps
+  - [ ] docker run
+  - [ ] docker logs
+  - [ ] docker compose
+- [ ] Low-level docker command invocation via SSH
 
 ## Useful links
 

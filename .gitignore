@@ -1,5 +1,7 @@
 .idea/
 data/
+experimental/
+*.log
 
 ### Python template
 # Byte-compiled / optimized / DLL files

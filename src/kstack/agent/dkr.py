@@ -1,5 +1,5 @@
 from kstack.agent import settings
-from kstack.agent.docker.client import DockerMgmtClient
+from kstack.agent.docker.client import DockerManager
 
 docker_host = settings.DOCKER_HOST
-dkr = DockerMgmtClient(docker_host)
+docker_client: DockerManager = DockerManager(docker_host)
