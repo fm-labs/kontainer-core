@@ -1,6 +1,7 @@
 .idea/
 data/
 experimental/
+templates/
 *.log
 
 ### Python template

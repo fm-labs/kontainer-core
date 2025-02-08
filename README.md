@@ -81,8 +81,11 @@ The kstack-agent REST api server is served at `http://localhost:5000/` by defaul
   - [ ] Join swarm
   - [ ] Leave swarm
 - [ ] System
-  - [ ] Info
-  - [ ] Prune unused resources
+  - [x] Info
+  - [x] Version
+  - [x] Disk usage
+  - [x] Events
+  - [ ] Prune unused resources (helper)
 
 - [ ] Low-level docker command invocation
   - [ ] docker top
@@ -90,7 +93,23 @@ The kstack-agent REST api server is served at `http://localhost:5000/` by defaul
   - [ ] docker run
   - [ ] docker logs
   - [ ] docker compose
+  - [ ] docker system prune
 - [ ] Low-level docker command invocation via SSH
+
+- [ ] Blueprints/Tepmlates
+  - [ ] Container Templates
+    - [ ] List templates from Kstack templates (json files hosted on github)
+    - [x] List templates from Portainer templates (json files hosted on github)
+    - [ ] Launch container from template
+    - [ ] Launch container from portainer template
+
+  - [ ] Compose Blueprints/Templates
+    - [ ] List compose templates from Kstack templates (json files hosted on github)
+    - [ ] List user-defined compose templates
+    - [ ] Add compose template
+      - [ ] Compose file upload
+      - [ ] Compose file url
+      - [ ] GitHub repository with compose file
 
 ## Useful links
 

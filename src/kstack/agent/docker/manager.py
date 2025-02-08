@@ -150,16 +150,15 @@ class DockerManager:
         return True if self.client.containers.get(key) else False
 
 
-    def run_container(self, image_name, name=None, **kwargs) -> Container:
+    def run_container(self, image_name, **kwargs) -> Container:
         """
-        Create Container
+        Run Container
 
         :param image_name: Image Name
-        :param name: Container Name
         :param kwargs: Additional Arguments
         :return: Container Object
         """
-        container = self.client.containers.run(image_name, name=name, **kwargs)
+        container = self.client.containers.run(image_name, **kwargs)
         return container
 
 

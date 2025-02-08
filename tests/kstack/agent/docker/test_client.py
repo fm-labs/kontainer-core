@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import requests
 
-from kstack.agent.docker.client import DockerManager
+from kstack.agent.docker.manager import DockerManager
 
 
 class TestDockerMgmtClient(TestCase):
