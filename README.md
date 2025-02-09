@@ -10,11 +10,25 @@ docker run -d \
   --name kstack-agent \
   --restart always \
   --privileged \
-  --user root \
   -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /var/lib/docker/volumes:/var/lib/docker/volumes:ro \
   -v kstack_agent_data:/app/data \
   -p 5000:5000 \
   fmlabs/kstack-agent:latest
+```
+
+If the docker base directory is different from `/var/lib/docker`, change the volume mount accordingly.
+
+```bash
+docker run -d \
+  --name kstack-agent \
+  --restart always \
+  --privileged \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /var/lib/docker/volumes:/srv/docker/volumes:ro \
+  -v kstack_agent_data:/app/data \
+  -p 5000:5000 \
+  fmlabs/kstack-agent:0.4.0
 ```
 
 ```bash
