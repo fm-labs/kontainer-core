@@ -15,7 +15,7 @@ from .stacks.stacksmanager import StacksManager
 StacksManager.enumerate()
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = "./data/uploads"
 CORS(app)
 
 @app.route('/', methods=["GET"])

@@ -3,6 +3,7 @@ import os
 import flask
 from flask import jsonify, request
 
+from ..docker.manager import DockerManager
 from ..stacks.docker import DockerComposeStack
 from ..stacks.stacksmanager import StacksManager
 
@@ -10,8 +11,29 @@ def stacks_api(app: flask.app.Flask):
 
     @app.route('/stacks', methods=["GET"])
     def list_stacks():
-        stacks = StacksManager.list_all()
-        mapped = list(map(lambda x: x.serialize(), stacks))
+        StacksManager.enumerate()
+        managed_stacks = list(StacksManager.list_all())
+        managed_names = [s.name for s in managed_stacks]
+
+        dkr = DockerManager()
+        containers = dkr.list_containers()
+        compose_stack_names = list(set([c.attrs.get('Config', {}).get('Labels', {}).get('com.docker.compose.project') for c in containers]))
+
+        for compose_stack_name in compose_stack_names:
+            if compose_stack_name is None:
+                continue
+            if compose_stack_name not in managed_names:
+                stack = DockerComposeStack(compose_stack_name)
+                stack.running = True
+                stack.managed = False
+                managed_stacks.append(stack)
+
+        def _map_managed_stack(_stack):
+            _stack.running = _stack.name in compose_stack_names
+            _stack.managed = _stack.name in managed_names
+            return _stack.serialize()
+
+        mapped = list(map(lambda x: _map_managed_stack(x), managed_stacks))
         return jsonify(mapped)
 
     @app.route('/stack/start/<string:name>', methods=["POST"])
@@ -83,12 +105,17 @@ def stacks_api(app: flask.app.Flask):
     def create_stack():
         request_json = flask.request.json
 
-        name = request_json.get("name")
-        if not name:
+        if "name" not in request_json:
             return jsonify({"error": "name is required"}), 400
+
+        name = request_json.get("name")
+        del request_json["name"]
 
         try:
             stack = StacksManager.create_stack(name, **request_json)
         except Exception as e:
+            # todo log error
+            # raise e
             return jsonify({"error": str(e)}), 400
+
         return jsonify(stack.serialize())

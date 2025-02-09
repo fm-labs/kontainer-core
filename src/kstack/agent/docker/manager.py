@@ -222,13 +222,35 @@ class DockerManager:
         return image
 
 
-    def list_volumes(self) -> list[Volume]:
+    def list_volumes(self, check_in_use=False, check_size=False) -> list[Volume]:
         """
         Get Volumes
 
         :return: Dictionary [id, tags, labels]
         """
         all_volumes = self.client.volumes.list()
+
+        if check_in_use:
+            containers = self.client.containers.list(all=True)
+            def _map_in_use(volume):
+                related_containers = []
+                for c in containers:
+                    for m in c.attrs['Mounts']:
+                        if m['Type'] == "volume" and m['Name'] is not None and volume.attrs['Name'] == m['Name']:
+                            related_containers.append(c.attrs['Name'])
+                            break
+
+                volume.attrs['_InUse'] = len(related_containers) > 0
+                volume.attrs['_ContainerIds'] = related_containers
+                return volume
+            all_volumes = list(map(lambda x: _map_in_use(x), all_volumes))
+
+        if check_size:
+            def _map_size(volume):
+                volume.attrs['_Size'] = get_docker_volume_size(self.client, volume.attrs['Name'])
+                return volume
+            all_volumes = list(map(lambda x: _map_size(x), all_volumes))
+
         return all_volumes
 
 

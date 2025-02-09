@@ -7,17 +7,19 @@ def volumes_api(app: flask.app.Flask):
 
     @app.route('/volumes', methods=["GET"])
     def list_volumes():
-        volumes = dkr.list_volumes()
-        mapped = list(map(lambda x: x.attrs, volumes))
+        """
+        List all volumes
 
-        # get query params
+        Optional query parameters:
+        - size: true/false (default: false) True to include size information
+        - in_use: true/false (default: false) True to include in-use information
+
+        :return:
+        """
         query = flask.request.args
-        # check if 'size' query param is present
-        if True or 'size' in query and query['size'] == 'true':
-            # get volumes with size
-            mapped = list(map(lambda x: {
-                **x,
-                '_Size': dkr.get_volume_size(x['Name'])
-            }, mapped))
+        check_size = query.get('size', 'true') == 'true'
+        check_in_use = query.get('in_use', 'true') == 'true'
 
+        volumes = dkr.list_volumes(check_in_use=check_in_use, check_size=check_size)
+        mapped = list(map(lambda x: x.attrs, volumes))
         return jsonify(mapped)

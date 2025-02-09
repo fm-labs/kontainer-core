@@ -1,26 +1,28 @@
-import json
 import os
 from typing import Union
 
 from . import ContainerStack
-from .builder import stack_from_compose_file, stack_from_portainer_template, stack_from_gitrepo, stack_from_compose_url
+from .initializer import stack_from_portainer_template, stack_from_gitrepo, \
+    stack_from_compose_url, stack_from_scratch, stack_from_template_repo
 from .docker import DockerComposeStack
 from ..settings import AGENT_DATA_DIR
 
 
-# Init project manager
-# scan for directories in DOCKER_PROJECTS_DIR and check if they have a project.json or a docker-compose.yml file
-# if they have a project.json file, load the project from the file
-# if they have a docker-compose.yml file, create a project from the file
-# if they have both, load the project from the project.json file and update it with the docker-compose.yml file
+# Init stack manager
+# scan for directories in DOCKER_PROJECTS_DIR and check if they have a stack.json or a docker-compose.yml file
+# if they have a stack.json file, load the stack from the file
+# if they have a docker-compose.yml file, create a stack from the file
+# if they have both, load the stack from the stack.json file and update it with the docker-compose.yml file
 # if they have neither, ignore the directory
 
 class StacksManager:
-    projects = {}
+    stacks = {}
 
-    # register the default builders
-    builders = {
-        "file": stack_from_compose_file,
+    # register the default initializers
+    initializers = {
+        "scratch": stack_from_scratch,
+        "template": stack_from_template_repo,
+        #"file": stack_from_compose_file,
         #"archive": stack_from_compose_archive,
         #"dir": stack_from_compose_dir,
         "url": stack_from_compose_url,
@@ -32,98 +34,106 @@ class StacksManager:
     @classmethod
     def enumerate(cls):
         """
-        Init project manager
-        scan for directories in DOCKER_PROJECTS_DIR and check if they have a project.json or a docker-compose.yml file
-        if they have a project.json file, load the project from the file
-        if they have a docker-compose.yml file, create a project from the file
-        if they have both, load the project from the project.json file and update it with the docker-compose.yml file
+        Init stack manager
+        scan for directories in DOCKER_PROJECTS_DIR and check if they have a stack.json or a docker-compose.yml file
+        if they have a stack.json file, load the stack from the file
+        if they have a docker-compose.yml file, create a stack from the file
+        if they have both, load the stack from the stack.json file and update it with the docker-compose.yml file
         if they have neither, ignore the directory
         """
-        cls.projects = {}
+        cls.stacks = {}
         stacks_dir = os.path.join(AGENT_DATA_DIR, 'stacks')
         os.makedirs(stacks_dir, exist_ok=True)
         for dir_name in os.listdir(stacks_dir):
-            project_dir = os.path.join(stacks_dir, dir_name)
-            if os.path.isdir(project_dir):
-                docker_compose = os.path.join(project_dir, "docker-compose.yml")
+            stack_dir = os.path.join(stacks_dir, dir_name)
+            if os.path.isdir(stack_dir):
+                docker_compose = os.path.join(stack_dir, "docker-compose.yml")
                 if os.path.exists(docker_compose):
-                    p = DockerComposeStack(dir_name)
-                    cls.add(p)
-                    pass
+                    stack = DockerComposeStack(dir_name)
+                    cls.add(stack)
+                    print(f"Added {stack.name}")
                 else:
-                    print(f"Skipping {project_dir}")
+                    print(f"Skipping {stack_dir}")
 
     @classmethod
-    def register_builder(cls, builder_name, builder):
-        cls.builders[builder_name] = builder
+    def register_initializer(cls, initializer_name, initializer):
+        cls.initializers[initializer_name] = initializer
 
     @classmethod
-    def deregister_builder(cls, builder_name):
-        del cls.builders[builder_name]
+    def deregister_initializer(cls, initializer_name):
+        del cls.initializers[initializer_name]
 
     @classmethod
     def create_stack(cls, name, **kwargs):
-        builder = cls.builders.get(kwargs.get("builder"))
-        if builder is None:
-            raise ValueError(f"Builder {kwargs.get('builder')} not found")
+        if cls.get(name) is not None:
+            raise ValueError(f"Stack {name} already exists")
 
-        stack = builder(name, **kwargs)
+        initializer_name = kwargs.get("launcher")
+        if initializer_name is None:
+            raise ValueError("Initializer not provided")
+
+        initializer = cls.initializers.get(initializer_name)
+        if initializer is None:
+            raise ValueError(f"Initializer not found: {initializer_name}")
+
+        stack = initializer(name, **kwargs)
         cls.add(stack)
         return stack
 
     @classmethod
     def list_all(cls):
-        return cls.projects.values()
+        return cls.stacks.values()
 
     @classmethod
-    def add(cls, project) -> None:
-        if project.name in cls.projects:
-            raise ValueError(f"Project {project.name} already exists")
-        cls.projects[project.name] = project
+    def add(cls, stack) -> None:
+        if stack.name in cls.stacks:
+            raise ValueError(f"Stack {stack.name} already exists")
+        cls.stacks[stack.name] = stack
 
     @classmethod
     def start(cls, name) -> ContainerStack:
-        project = cls.projects[name]
-        if project is None:
-            raise ValueError(f"Project {name} not found")
-        project.start()
-        return project
+        stack = cls.stacks[name]
+        if stack is None:
+            raise ValueError(f"Stack {name} not found")
+        stack.start()
+        return stack
 
     @classmethod
     def stop(cls, name) -> ContainerStack:
-        project = cls.projects[name]
-        if project is None:
-            raise ValueError(f"Project {name} not found")
-        project.stop()
-        return project
+        stack = cls.stacks[name]
+        if stack is None:
+            raise ValueError(f"Stack {name} not found")
+        stack.stop()
+        return stack
 
     @classmethod
     def remove(cls, name) -> ContainerStack:
-        project = cls.projects[name]
-        if project is None:
-            raise ValueError(f"Project {name} not found")
-        project.remove()
-        #del cls.projects[name]
-        return project
+        stack = cls.stacks[name]
+        if stack is None:
+            raise ValueError(f"Stack {name} not found")
+        stack.remove()
+        #del cls.stacks[name]
+        return stack
 
     @classmethod
     def get(cls, name) -> Union[ContainerStack, None]:
-        project = cls.projects[name]
-        #if project is None:
-        #    raise ValueError(f"Project {name} not found")
-        return project
+        if name not in cls.stacks:
+            return None
+
+        stack = cls.stacks[name]
+        return stack
 
     @classmethod
     def restart(cls, name) -> ContainerStack:
-        project = cls.projects[name]
-        if project is None:
-            raise ValueError(f"Project {name} not found")
-        project.restart()
-        return project
+        stack = cls.stacks[name]
+        if stack is None:
+            raise ValueError(f"Stack {name} not found")
+        stack.restart()
+        return stack
 
     # @classmethod
     # def restart_all(cls):
-    #     for project in cls.projects.values():
-    #         project.restart()
-    #     return cls.projects.values()
+    #     for stack in cls.stacks.values():
+    #         stack.restart()
+    #     return cls.stacks.values()
 
