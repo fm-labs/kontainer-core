@@ -2,98 +2,90 @@ import json
 import threading
 import time
 
-import flask
 from docker.types import CancellableStream
-from flask import jsonify, request
+from flask import jsonify, request, Blueprint
 
 from kstack.agent.docker.dkr import dkr
 
+engine_api_bp = Blueprint('engine_api', __name__, url_prefix='/api')
 
-def engine_api(app: flask.app.Flask):
+@engine_api_bp.route('/engine/info', methods=["GET"])
+def engine_info():
     """
-    Engine API
-    https://docker-py.readthedocs.io/en/stable/client.html
+    Get Engine Info
 
-    :param app: flask.app.Flask
+    :return: dict
     """
+    info = dkr.client.info()
+    info_dict = json.loads(json.dumps(info))
+    return jsonify(info_dict)
 
-    @app.route('/engine/info', methods=["GET"])
-    def engine_info():
-        """
-        Get Engine Info
+@engine_api_bp.route('/engine/version', methods=["GET"])
+def engine_version():
+    """
+    Get Engine Version
 
-        :return: dict
-        """
-        info = dkr.client.info()
-        info_dict = json.loads(json.dumps(info))
-        return jsonify(info_dict)
-
-    @app.route('/engine/version', methods=["GET"])
-    def engine_version():
-        """
-        Get Engine Version
-
-        :return: dict
-        """
-        version = dkr.client.version()
-        return jsonify(version)
+    :return: dict
+    """
+    version = dkr.client.version()
+    return jsonify(version)
 
 
-    @app.route('/engine/ping', methods=["GET"])
-    def engine_ping():
-        """
-        Get Engine Ping
+@engine_api_bp.route('/engine/ping', methods=["GET"])
+def engine_ping():
+    """
+    Get Engine Ping
 
-        :return: dict
-        """
-        ping = dkr.client.ping()
-        return jsonify(ping)
-
-
-    @app.route('/engine/df', methods=["GET"])
-    def engine_df():
-        """
-        Get Engine Disk Usage
-
-        :return: dict
-        """
-        df = dkr.client.df()
-        return jsonify(df)
+    :return: dict
+    """
+    ping = dkr.client.ping()
+    return jsonify(ping)
 
 
-    @app.route('/engine/events', methods=["GET"])
-    def engine_events():
-        """
-        Get Engine Events.
-        https://docker-py.readthedocs.io/en/stable/events.html
+@engine_api_bp.route('/engine/df', methods=["GET"])
+def engine_df():
+    """
+    Get Engine Disk Usage
 
-        :return: dict
-        """
-        since = request.args.get("since", None)
-        until = request.args.get("until", None)
-        container = request.args.get("container", None)
+    :return: dict
+    """
+    df = dkr.client.df()
+    return jsonify(df)
 
-        filters = {}
-        if container:
-            filters = {"container": container}
-        if since is None or since == "":
-            since = int(time.time()) - 3600
-        if until is None or until == "":
-            until = int(time.time())
 
-        events = list()
-        def read_events():
-            events_stream: CancellableStream = dkr.client.events(decode=True,
-                                                                 since=since,
-                                                                 until=until,
-                                                                 filters={filters})
-            for ev in events_stream:
-                events.append(ev)
+@engine_api_bp.route('/engine/events', methods=["GET"])
+def engine_events():
+    """
+    Get Engine Events.
+    https://docker-py.readthedocs.io/en/stable/events.html
 
-        # read the (auto-decoded) event steam in a separate thread
-        # wait for the thread to finish, max 10 sec
-        t = threading.Thread(target=read_events)
-        t.start()
-        t.join(timeout=10)
+    :return: dict
+    """
+    since = request.args.get("since", None)
+    until = request.args.get("until", None)
+    container = request.args.get("container", None)
 
-        return jsonify(events)
+    filters = {}
+    if container:
+        filters = {"container": container}
+    if since is None or since == "":
+        since = int(time.time()) - 3600
+    if until is None or until == "":
+        until = int(time.time())
+
+    events = list()
+    def read_events():
+        events_stream: CancellableStream = dkr.client.events(decode=True,
+                                                             since=since,
+                                                             until=until,
+                                                             filters={filters})
+        for ev in events_stream:
+            events.append(ev)
+
+    # read the (auto-decoded) event steam in a separate thread
+    # wait for the thread to finish, max 10 sec
+    t = threading.Thread(target=read_events)
+    t.start()
+    t.join(timeout=10)
+
+    return jsonify(events)

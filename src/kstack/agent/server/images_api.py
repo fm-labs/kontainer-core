@@ -1,12 +1,11 @@
-import flask
-from flask import jsonify
+from flask import jsonify, Blueprint
 
 from kstack.agent.docker.dkr import dkr
 
-def images_api(app: flask.app.Flask):
+images_api_bp = Blueprint('images_api', __name__, url_prefix='/api')
 
-    @app.route('/images', methods=["GET"])
-    def list_images():
-        images = dkr.list_images()
-        mapped = list(map(lambda x: x.attrs, images))
-        return jsonify(mapped)
+@images_api_bp.route('/images', methods=["GET"])
+def list_images():
+    images = dkr.list_images()
+    mapped = list(map(lambda x: x.attrs, images))
+    return jsonify(mapped)
