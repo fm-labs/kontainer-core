@@ -21,10 +21,10 @@ trap trap_handler SIGINT SIGTERM SIGABRT SIGQUIT SIGUSR1 SIGUSR2
 CURRENTUSER=`whoami`
 CURRENTUSERID=`id`
 
-
 echo "WHOAMI: ${CURRENTUSER} / ${KUSER}"
 echo "ID: ${CURRENTUSERID} / ${KUSER_ID}"
 
+export PYTHON_UNBUFFERED=1
 export PYTHONPATH=/app/src:$PYTHONPATH
 export AGENT_DATA_DIR=/app/data
 export AGENT_HOST=0.0.0.0
@@ -42,8 +42,10 @@ case $1 in
 
   "devserver")
     init_services
+
     echo "Starting devserver ..."
     exec python3 /app/agent.py
+
     ;;
 
   "gunicorn-tcp")
@@ -61,7 +63,7 @@ case $1 in
     ;;
 
   "gunicorn-socket")
-    init_app
+    init_services
 
     SOCKFILE=/run/gunicorn.sock
     BIND=unix:$SOCKFILE
@@ -79,8 +81,6 @@ case $1 in
     echo "Executing arbitrary command: $@"
     # exec su -c "$@" $KUSER
     exec "$@"
+
     ;;
 esac
-
-
-echo "Exiting"

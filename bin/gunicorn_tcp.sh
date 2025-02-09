@@ -27,6 +27,7 @@ NUM_WORKERS=3
 WSGI_MODULE=wsgi
 # echo "Starting $NAME as $(whoami)"
 
+export PYTHON_UNBUFFERED=1
 export PYTHONPATH=$DIR/src:$PYTHONPATH
 export AGENT_DATA_DIR=$DIR/data
 
@@ -37,7 +38,6 @@ export AGENT_DATA_DIR=$DIR/data
 exec gunicorn ${WSGI_MODULE}:app \
   --name $NAME \
   --workers $NUM_WORKERS \
-  # --user=$USER --group=$GROUP \
   --bind=$BIND \
   --log-level=debug \
   --log-file=-

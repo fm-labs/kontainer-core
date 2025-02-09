@@ -18,7 +18,7 @@ RUN install -m 0755 -d /etc/apt/keyrings \
     && curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
     && chmod a+r /etc/apt/keyrings/docker.asc
 
-# Add the repository to Apt sources:
+# Add Docker repository to Apt sources:
 RUN echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
@@ -27,34 +27,30 @@ RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io d
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt/archives/*
 
-# Verify the installations
+# Verify Docker installation
 #RUN which docker && docker --version
 
 WORKDIR /app
 
-# Install dependencies
+# Install python dependencies
 COPY ./pyproject.toml ./poetry.lock /app/
 RUN pip install poetry \
     && poetry config virtualenvs.create false \
     && poetry install --only main --no-root
 
 # Copy the rest of the code
-#COPY ./README.md /app/README.md
-#COPY ./bin /app/bin
 COPY ./src /app/src
 COPY ./agent.py /app/agent.py
 
 # Nginx
-#RUN ["ln", "-sf", "/app/.etc/nginx/gunicorn_docker.conf", "/etc/nginx/sites-enabled/default"]
-RUN ln -sf /app/.etc/nginx/gunicorn_docker.conf /etc/nginx/conf.d/default
-
+COPY ./docker/nginx/default.conf /etc/nginx/sites-available/default
 
 # Entry point
 COPY ./docker/entrypoint.sh /entrypoint.sh
 RUN ["chmod", "+x", "/entrypoint.sh"]
 ENTRYPOINT ["/entrypoint.sh"]
-#CMD ["python", "/app/agent.py"]
 CMD ["devserver"]
+#CMD ["python", "/app/agent.py"]
 
 # Health check
 HEALTHCHECK CMD curl --fail http://localhost:5000/ || exit 1
