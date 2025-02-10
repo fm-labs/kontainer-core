@@ -3,6 +3,7 @@ import os
 import flask
 from flask import jsonify, request
 
+from .. import settings
 from ..docker.manager import DockerManager
 from ..stacks.docker import DockerComposeStack
 from ..stacks.stacksmanager import StacksManager
@@ -79,7 +80,7 @@ def upload_stack(name):
         return jsonify({"error": f"Project {name} not found"}), 404
 
     # Save the file to the stack directory
-    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], name)
+    upload_dir = os.path.join(settings.AGENT_DATA_DIR, 'stacks', name, 'uploads')
     os.makedirs(upload_dir, exist_ok=True)
 
     # Check if a file is part of the request
@@ -95,7 +96,7 @@ def upload_stack(name):
     if file and allowed_file(file.filename):
         filename = file.filename
         target_file = os.path.join(upload_dir, filename)
-        # Save the file to the UPLOAD_FOLDER
+        # Save the file to the UPLOAD_DIR
         file.save(target_file)
         return f'File uploaded successfully: {filename}'
     else:

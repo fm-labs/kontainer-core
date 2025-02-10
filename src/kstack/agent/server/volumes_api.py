@@ -18,7 +18,8 @@ def list_volumes():
     :return:
     """
     query = flask.request.args
-    check_size = query.get('size', 'true') == 'true'
+    # check_size = query.get('size', 'true') == 'true'
+    check_size = False  # todo enable size check
     check_in_use = query.get('in_use', 'true') == 'true'
 
     volumes = dkr.list_volumes(check_in_use=check_in_use, check_size=check_size)

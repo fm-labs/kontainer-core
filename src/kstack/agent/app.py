@@ -1,8 +1,10 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 
+from . import settings
 from .server.engine_api import engine_api_bp
 from .server.container_api import container_api_bp
+from .server.environments_api import environments_api_bp
 from .server.images_api import images_api_bp
 from .server.networks_api import networks_api_bp
 from .server.stacks_api import stacks_api_bp
@@ -15,7 +17,10 @@ from .stacks.stacksmanager import StacksManager
 StacksManager.enumerate()
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = "./data/uploads"
+app.config['DATA_DIR'] = settings.AGENT_DATA_DIR
+app.config['STACKS_DIR'] = f"{settings.AGENT_DATA_DIR}/stacks"
+app.config['REPOS_DIR'] = f"{settings.AGENT_DATA_DIR}/repos"
+app.config['UPLOAD_DIR'] = f"{settings.AGENT_DATA_DIR}/uploads"
 CORS(app)
 
 @app.route('/', methods=["GET"])
@@ -34,3 +39,4 @@ app.register_blueprint(networks_api_bp)
 app.register_blueprint(stacks_api_bp)
 app.register_blueprint(system_api_bp)
 app.register_blueprint(volumes_api_bp)
+app.register_blueprint(environments_api_bp)
