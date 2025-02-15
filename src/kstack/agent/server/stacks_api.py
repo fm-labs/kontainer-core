@@ -1,4 +1,5 @@
 import os
+import time
 
 import flask
 from flask import jsonify, request
@@ -10,23 +11,30 @@ from ..stacks.stacksmanager import StacksManager
 
 stacks_api_bp = flask.Blueprint('stacks_api', __name__, url_prefix='/api')
 
+dkr = DockerManager()
 
 @stacks_api_bp.route('/stacks', methods=["GET"])
 def list_stacks():
+    time_start = time.time()
     StacksManager.enumerate()
     managed_stacks = list(StacksManager.list_all())
     managed_names = [s.name for s in managed_stacks]
+    print(f"Enumerated stacks in {time.time() - time_start} seconds")
 
-    dkr = DockerManager()
+    # get all running containers
+    time_start = time.time()
     containers = dkr.list_containers()
+    print(f"Listed containers (1) in {time.time() - time_start} seconds")
     compose_stack_names = list(set([c.attrs.get('Config', {}).get('Labels', {}).get('com.docker.compose.project') for c in containers]))
+    print(f"Listed containers (2) in {time.time() - time_start} seconds")
 
+    time_start = time.time()
     for compose_stack_name in compose_stack_names:
         if compose_stack_name is None:
             continue
         if compose_stack_name not in managed_names:
             stack = DockerComposeStack(compose_stack_name)
-            stack.running = True
+            stack.running = False
             stack.managed = False
             managed_stacks.append(stack)
 
@@ -36,6 +44,7 @@ def list_stacks():
         return _stack.serialize()
 
     mapped = list(map(lambda x: _map_managed_stack(x), managed_stacks))
+    print(f"Mapped stacks in {time.time() - time_start} seconds")
     return jsonify(mapped)
 
 @stacks_api_bp.route('/stack/start/<string:name>', methods=["POST"])

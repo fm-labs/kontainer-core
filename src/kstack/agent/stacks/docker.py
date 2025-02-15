@@ -30,7 +30,7 @@ class DockerComposeStack(ContainerStack):
 
                 args.append(f"--{k.replace('_', '-')}")
                 if type(v) is not bool:
-                    args.append(v)
+                    args.append(str(v))
         return args
 
     def _compose(self, cmd, **kwargs):
@@ -52,10 +52,31 @@ class DockerComposeStack(ContainerStack):
                     + [cmd] # the compose command (up/down/...)
                     + self._map_kwargs(kwargs)) # additional command args
             print(f"Running command: {pcmd}")
+            print(f"CMD: {" ".join(pcmd)}")
 
-            p1 = subprocess.run(pcmd, cwd=self.project_dir, env=os.environ, capture_output=True)
-            print(p1.stdout)
-            print(p1.stderr)
+            #penv = os.environ.copy()
+            penv = dict()
+            penv['PATH'] = os.getenv('PATH')
+            penv['COMPOSE_PROJECT_NAME'] = self.name
+            penv['COMPOSE_FILE'] = 'docker-compose.yml'
+            penv['COMPOSE_PROJECT_DIRECTORY'] = self.project_dir
+            penv['PWD'] = self.project_dir
+            #penv['DOCKER_HOST'] = 'unix:///var/run/docker.sock'
+
+            # Load .env file into 'penv'
+            env_file = os.path.join(self.project_dir, '.env')
+            if os.path.exists(env_file):
+                with open(env_file, 'r') as f:
+                    for line in f.readlines():
+                        if line.strip() and not line.startswith('#'):
+                            k, v = line.split('=', 1)
+                            penv[k] = v.strip()
+
+            print(f"Environment: {penv}")
+
+            p1 = subprocess.run(pcmd, cwd=self.project_dir, env=penv, capture_output=True)
+            print("STDOUT", p1.stdout)
+            print("STDERR", p1.stderr)
 
             if p1.returncode != 0:
                 raise Exception(f"Error running command: {p1.stderr}")

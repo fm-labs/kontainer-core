@@ -92,25 +92,25 @@ class StacksManager:
 
     @classmethod
     def start(cls, name) -> ContainerStack:
-        stack = cls.stacks[name]
-        if stack is None:
+        if name not in cls.stacks:
             raise ValueError(f"Stack {name} not found")
+        stack = cls.stacks[name]
         stack.start()
         return stack
 
     @classmethod
     def stop(cls, name) -> ContainerStack:
-        stack = cls.stacks[name]
-        if stack is None:
+        if name not in cls.stacks:
             raise ValueError(f"Stack {name} not found")
+        stack = cls.stacks[name]
         stack.stop()
         return stack
 
     @classmethod
     def remove(cls, name) -> ContainerStack:
-        stack = cls.stacks[name]
-        if stack is None:
+        if name not in cls.stacks:
             raise ValueError(f"Stack {name} not found")
+        stack = cls.stacks[name]
         stack.remove()
         #del cls.stacks[name]
         return stack
@@ -125,9 +125,9 @@ class StacksManager:
 
     @classmethod
     def restart(cls, name) -> ContainerStack:
-        stack = cls.stacks[name]
-        if stack is None:
+        if name not in cls.stacks:
             raise ValueError(f"Stack {name} not found")
+        stack = cls.stacks[name]
         stack.restart()
         return stack
 

@@ -42,6 +42,7 @@ Uses [poetry](https://python-poetry.org/) for dependency management.
 
 ```bash
 poetry install
+export AGENT_DATA_DIR=./data
 potry run python ./agent.py
 ```
 
