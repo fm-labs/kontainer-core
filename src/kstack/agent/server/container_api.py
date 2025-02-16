@@ -72,6 +72,15 @@ def restart_container(key):
         return jsonify({"error": str(e)}), 500
 
 
+@container_api_bp.route('/containers/logs/<string:key>', methods=["GET"])
+def get_container_logs(key):
+    try:
+        logs = dkr.get_container_logs(key)
+        return jsonify(logs)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @container_api_bp.route('/containers/create', methods=["POST"])
 def create_container():
     run_data = request.json

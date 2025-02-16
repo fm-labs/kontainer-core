@@ -175,6 +175,23 @@ class DockerManager:
         return container
 
 
+    def get_container_logs(self, key) -> list[str]:
+        """
+        Get Container Logs
+
+        :param key: id from Container on Docker
+        :return: list
+        """
+        if not self.container_exists(key):
+            raise ContainerNotFoundError(key)
+
+        container = self.client.containers.get(key)
+        logs = list()
+        log_bytes = container.logs(stream=False, tail=100, follow=False, timestamps=True)
+        for log in log_bytes.decode().split('\n'):
+            logs.append(log)
+        return logs
+
     def list_images(self) -> list[Image]:
         """
         Get Images
