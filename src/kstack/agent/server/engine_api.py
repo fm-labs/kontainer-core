@@ -63,9 +63,13 @@ def engine_events():
 
     :return: dict
     """
-    since = request.args.get("since", None)
-    until = request.args.get("until", None)
-    container = request.args.get("container", None)
+    p_since = request.args.get("since", None)
+    p_until = request.args.get("until", None)
+    p_container = request.args.get("container", None)
+
+    since = int(p_since) if p_since else None
+    until = int(p_until) if p_until else None
+    container = str(p_container) if p_container else None
 
     filters = {}
     if container:
@@ -74,6 +78,11 @@ def engine_events():
         since = int(time.time()) - 3600
     if until is None or until == "":
         until = int(time.time())
+
+    # now = int(time.time())
+    # print("now:   ", now)
+    # print("since: ", since, now - since)
+    # print("until: ", until, now - until)
 
     events = list()
 
