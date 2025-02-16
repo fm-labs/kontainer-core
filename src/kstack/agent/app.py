@@ -6,6 +6,7 @@ from .server.engine_api import engine_api_bp
 from .server.container_api import container_api_bp
 from .server.environments_api import environments_api_bp
 from .server.images_api import images_api_bp
+from .server.middleware import auth_token_middleware
 #from .server.kube_namespaces_api import kube_namespaces_api_bp
 #from .server.kube_pods_api import kube_pods_api_bp
 from .server.networks_api import networks_api_bp
@@ -23,7 +24,9 @@ app.config['DATA_DIR'] = settings.AGENT_DATA_DIR
 app.config['STACKS_DIR'] = f"{settings.AGENT_DATA_DIR}/stacks"
 app.config['REPOS_DIR'] = f"{settings.AGENT_DATA_DIR}/repos"
 app.config['UPLOAD_DIR'] = f"{settings.AGENT_DATA_DIR}/uploads"
-CORS(app)
+app.config['AUTH_TOKEN'] = settings.AGENT_AUTH_TOKEN
+CORS(app, allow_headers=["x-api-key"])
+auth_token_middleware(app)
 
 @app.route('/', methods=["GET"])
 def index():
@@ -35,6 +38,7 @@ def index():
 
 # Admin API
 app.register_blueprint(environments_api_bp)
+# app.register_blueprint(system_api_bp)
 
 # Docker API
 app.register_blueprint(engine_api_bp)
@@ -42,7 +46,6 @@ app.register_blueprint(container_api_bp)
 app.register_blueprint(images_api_bp)
 app.register_blueprint(networks_api_bp)
 app.register_blueprint(stacks_api_bp)
-app.register_blueprint(system_api_bp)
 app.register_blueprint(volumes_api_bp)
 
 # Kubernetes API

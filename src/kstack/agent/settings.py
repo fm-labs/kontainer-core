@@ -10,6 +10,8 @@ AGENT_ENABLE_DOCKER = os.getenv("AGENT_ENABLE_DOCKER", "true").lower() == "true"
 AGENT_ENABLE_KUBERNETES = os.getenv("AGENT_ENABLE_KUBERNETES", "false").lower() == "true"
 AGENT_ENABLE_DELETE = os.getenv("AGENT_ENABLE_DELETE", "true").lower() == "true"
 
+AGENT_AUTH_TOKEN = os.getenv("AGENT_AUTH_TOKEN", "super-secret-authtoken")
+
 # Docker settings
 DOCKER_HOST = os.getenv("DOCKER_HOST", "unix:///var/run/docker.sock")
 
