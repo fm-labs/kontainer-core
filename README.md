@@ -50,7 +50,7 @@ The kstack-agent REST api server is served at `http://localhost:5000/` by defaul
 
 ## Features
 
-- [x] Containers
+- [ ] Containers
   - [x] List containers
   - [x] Start container
   - [x] Pause container
@@ -59,26 +59,26 @@ The kstack-agent REST api server is served at `http://localhost:5000/` by defaul
   - [x] Restart container
   - [x] Remove container
   - [x] Inspect container
-  - [ ] View logs
-  - [x] View logstream (api, websocket)
-  - [ ] Execute command
-  - [x] Execute command in interactive shell (3rd-party, websocket)
+  - [x] View logs
+  - [ ] View logstream (websocket)
+  - [x] Execute command
+  - [ ] Execute command in interactive shell (websocket)
 - [ ] Images
   - [x] List images
   - [ ] Pull image
   - [x] Remove image
-  - [x] Get/Inspect image
+  - [ ] Inspect image
 - [ ] Networks
   - [x] List networks
-  - [x] Get/Inspect network
+  - [ ] Inspect network
 - [x] Volumes
   - [x] List volumes
-  - [x] Get/Inspect volume
+  - [ ] Inspect volume
 - [ ] Compose Stacks
   - [ ] List compose stacks
-    - [ ] List compose stacks from container labels
+    - [x] List compose stacks from local filesystem
+    - [x] List compose stacks from container labels
     - [ ] List compose stacks from registered repositories
-    - [ ] List compose stacks from local compose files
   - [ ] Inspect compose stack
   - [ ] Start compose stack (compose up)
   - [ ] Stop compose stack (compose stop)
@@ -95,12 +95,12 @@ The kstack-agent REST api server is served at `http://localhost:5000/` by defaul
   - [ ] Inspect node
   - [ ] Join swarm
   - [ ] Leave swarm
-- [ ] System
+- [ ] Docker Engine
   - [x] Info
   - [x] Version
   - [x] Disk usage
   - [x] Events
-  - [ ] Prune unused resources (helper)
+  - [ ] Prune unused resources
 
 - [ ] Low-level docker command invocation
   - [ ] docker top
@@ -111,14 +111,14 @@ The kstack-agent REST api server is served at `http://localhost:5000/` by defaul
   - [ ] docker system prune
 - [ ] Low-level docker command invocation via SSH
 
-- [ ] Blueprints/Tepmlates
-  - [ ] Container Templates
+- [ ] Blueprints
+  - [ ] Container Blueprints
     - [ ] List templates from Kstack templates (json files hosted on github)
     - [x] List templates from Portainer templates (json files hosted on github)
     - [ ] Launch container from template
     - [ ] Launch container from portainer template
 
-  - [ ] Compose Blueprints/Templates
+  - [ ] Compose Blueprints
     - [ ] List compose templates from Kstack templates (json files hosted on github)
     - [ ] List user-defined compose templates
     - [ ] Add compose template
