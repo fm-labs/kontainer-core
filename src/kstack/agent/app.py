@@ -25,7 +25,10 @@ app.config['STACKS_DIR'] = f"{settings.AGENT_DATA_DIR}/stacks"
 app.config['REPOS_DIR'] = f"{settings.AGENT_DATA_DIR}/repos"
 app.config['UPLOAD_DIR'] = f"{settings.AGENT_DATA_DIR}/uploads"
 app.config['AUTH_TOKEN'] = settings.AGENT_AUTH_TOKEN
-CORS(app, allow_headers=["x-api-key"])
+CORS(app,
+     allow_headers=["x-api-key", "x-csrf-token", "content-type"],
+     methods=["GET", "POST", "OPTIONS"],
+     origins=["*"])
 auth_token_middleware(app)
 
 @app.route('/', methods=["GET"])
