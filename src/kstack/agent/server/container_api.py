@@ -19,37 +19,57 @@ def list_containers():
     return jsonify(mapped)
 
 
-@container_api_bp.route('/container/<string:key>', methods=["GET"])
+@container_api_bp.route('/containers/<string:key>', methods=["GET"])
 def describe_container(key):
     return jsonify(dkr.get_container(key).attrs)
 
 
-@container_api_bp.route('/container/start/<string:key>', methods=["POST"])
+@container_api_bp.route('/containers/start/<string:key>', methods=["POST"])
 def start_container(key):
-    return jsonify(dkr.start_container(key).attrs)
+    try:
+        container = dkr.start_container(key)
+        return jsonify(container.attrs)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
-@container_api_bp.route('/container/pause/<string:key>', methods=["POST"])
+@container_api_bp.route('/containers/pause/<string:key>', methods=["POST"])
 def pause_container(key):
-    return jsonify(dkr.pause_container(key).attrs)
+    try:
+        container = dkr.pause_container(key)
+        return jsonify(container.attrs)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
-@container_api_bp.route('/container/stop/<string:key>', methods=["POST"])
+@container_api_bp.route('/containers/stop/<string:key>', methods=["POST"])
 def stop_container(key):
-    return jsonify(dkr.stop_container(key).attrs)
+    try:
+        container = dkr.stop_container(key)
+        return jsonify(container.attrs)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
-@container_api_bp.route('/container/remove/<string:key>', methods=["POST"])
+@container_api_bp.route('/containers/remove/<string:key>', methods=["POST"])
 def remove_container(key):
-    if settings.AGENT_ENABLE_DELETE:
-        return jsonify(dkr.remove_container(key).attrs)
+    if not settings.AGENT_ENABLE_DELETE:
+        return jsonify({"error": "Delete is disabled"}), 500
 
-    return jsonify(dkr.remove_container(key).attrs)
+    try:
+        container = dkr.remove_container(key)
+        return jsonify(container.attrs)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
-@container_api_bp.route('/container/restart/<string:key>', methods=["POST"])
+@container_api_bp.route('/containers/restart/<string:key>', methods=["POST"])
 def restart_container(key):
-    return jsonify(dkr.restart_container(key).attrs)
+    try:
+        container = dkr.restart_container(key)
+        return jsonify(container.attrs)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @container_api_bp.route('/containers/create', methods=["POST"])
