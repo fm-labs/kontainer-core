@@ -81,6 +81,16 @@ def get_container_logs(key):
         return jsonify({"error": str(e)}), 500
 
 
+@container_api_bp.route('/containers/exec/<string:key>', methods=["POST"])
+def exec_container_command(key):
+    command = request.json["command"]
+    try:
+        result = dkr.exec_container_cmd(key, command)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @container_api_bp.route('/containers/create', methods=["POST"])
 def create_container():
     run_data = request.json

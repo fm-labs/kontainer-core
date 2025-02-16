@@ -192,6 +192,25 @@ class DockerManager:
             logs.append(log)
         return logs
 
+
+    def exec_container_cmd(self, key, cmd) -> list[str]:
+        """
+        Execute Command in Container
+
+        :param key: id from Container on Docker
+        :param cmd: Command
+        :return: list
+        """
+        if not self.container_exists(key):
+            raise ContainerNotFoundError(key)
+
+        container = self.client.containers.get(key)
+        (exit_code, output) = container.exec_run(cmd, detach=False, stream=False, workdir="/")
+
+        lines = output.decode().split('\n')
+        return lines
+
+
     def list_images(self) -> list[Image]:
         """
         Get Images
