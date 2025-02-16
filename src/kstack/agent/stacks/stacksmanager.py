@@ -87,7 +87,8 @@ class StacksManager:
     @classmethod
     def add(cls, stack) -> None:
         if stack.name in cls.stacks:
-            raise ValueError(f"Stack {stack.name} already exists")
+            # raise ValueError(f"Stack {stack.name} already exists")
+            return
         cls.stacks[stack.name] = stack
 
     @classmethod

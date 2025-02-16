@@ -9,6 +9,7 @@ from kstack.agent.docker.dkr import dkr
 
 engine_api_bp = Blueprint('engine_api', __name__, url_prefix='/api')
 
+
 @engine_api_bp.route('/engine/info', methods=["GET"])
 def engine_info():
     """
@@ -19,6 +20,7 @@ def engine_info():
     info = dkr.client.info()
     info_dict = json.loads(json.dumps(info))
     return jsonify(info_dict)
+
 
 @engine_api_bp.route('/engine/version', methods=["GET"])
 def engine_version():
@@ -74,11 +76,12 @@ def engine_events():
         until = int(time.time())
 
     events = list()
+
     def read_events():
         events_stream: CancellableStream = dkr.client.events(decode=True,
                                                              since=since,
                                                              until=until,
-                                                             filters={filters})
+                                                             filters=filters)
         for ev in events_stream:
             events.append(ev)
 
