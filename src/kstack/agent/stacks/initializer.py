@@ -11,20 +11,26 @@ templates_dir = f"{data_dir}/templates"
 stacks_dir = f"{data_dir}/stacks"
 repos_dir = f"{data_dir}/repos"
 
+def _init_stack(stack_name: str) -> DockerComposeStack:
+    stack = DockerComposeStack(stack_name)
+
+    # Create the stack directory
+    # Ensure the stack directory does not exist
+    stack_dir = stack.project_dir
+    os.makedirs(stack_dir, exist_ok=False)
+
+    return stack
+
 
 def stack_from_scratch(stack_name, **kwargs):
     content = kwargs.get("compose_content")
     if content is None:
         raise ValueError("No content provided")
 
-    stack = DockerComposeStack(stack_name)
-
-    # Ensure the stack directory exists
-    stack_dir = stack.project_dir
-    os.makedirs(stack_dir, exist_ok=True)
+    stack = _init_stack(stack_name)
 
     # Write the content to the stack directory
-    compose_file = os.path.join(stack_dir, "docker-compose.yml")
+    compose_file = os.path.join(stack.project_dir, "docker-compose.yml")
     with open(compose_file, "w") as f:
         f.write(content)
 
@@ -50,97 +56,58 @@ def stack_from_compose_url(stack_name, **kwargs):
     if url is None:
         raise ValueError("URL not provided")
 
+    stack = _init_stack(stack_name)
+
     # download the file from the url and build the stack
     content = None
     with requests.get(url) as r:
-        content = r.content
-
-    stack = DockerComposeStack(stack_name)
-
-    # Ensure the stack directory exists
-    stack_dir = stack.project_dir
-    os.makedirs(stack_dir, exist_ok=True)
+        content = r.content.decode("utf-8")
 
     # Write the content to the stack directory
-    compose_file = os.path.join(stack_dir, "docker-compose.yml")
+    compose_file = os.path.join(stack.project_dir, "docker-compose.yml")
     with open(compose_file, "w") as f:
         f.write(content)
 
     return stack
 
 
-def stack_from_gitrepo(stack_name, **kwargs):
-    url = kwargs.get("repo_url")
-
-    if url is None:
+def stack_from_gitrepo(stack_name, repo_url=None, **kwargs):
+    if repo_url is None:
         raise ValueError("URL not provided")
 
-    stack = init_stack_from_git_repo(stack_name, url)
-    return stack
-
-
-def stack_from_template_repo(stack_name, **kwargs):
-    url = kwargs.get("template_repo_url")
-    template_name = kwargs.get("template_name")
-
-    if url is None:
-        raise ValueError("URL not provided")
-    if template_name is None:
-        raise ValueError("Template name not provided")
-
-    stack = init_stack_from_template_repo(stack_name, url, template_name)
-    return stack
-
-
-def stack_from_portainer_template(stack, **kwargs):
-    url = kwargs.get("url")
-    template = kwargs.get("template")
-    if url is None:
-        raise ValueError("Templates URL not provided")
-    if template is None:
-        raise ValueError("Template name not provided")
-
-    # todo download the portainer templates url, extract the template, and build the stack
-    pass
-
-
-
-def init_stack_from_git_repo(stack_name, repo_url, parameters=None):
-    stack_base_dir = f"{stacks_dir}/{stack_name}"
-    if os.path.exists(stack_base_dir):
-        raise ValueError(f"Stack directory {stack_base_dir} already exists")
+    stack = _init_stack(stack_name)
+    #if os.path.exists(stack.project_dir):
+    #    raise ValueError(f"Stack directory {stack.project_dir} already exists")
 
     # using gitpython
     # clone git repo to stack_base_dir
 
-    git.Repo.clone_from(repo_url, stack_base_dir)
-    print(f"Stacked cloned to {stack_base_dir}")
+    git.Repo.clone_from(repo_url, stack.project_dir)
+    print(f"Stacked cloned to {stack.project_dir}")
 
-    return stack_base_dir
+    return stack
 
 
-def init_stack_from_template_repo(stack_name, repo_url, template_name="", parameters=None):
+def stack_from_template_repo(stack_name, repo_url=None, template_name=None, parameters=None, **kwargs):
 
-    stack_base_dir = f"{stacks_dir}/{stack_name}"
-    if os.path.exists(stack_base_dir):
-        raise ValueError(f"Stack directory {stack_base_dir} already exists")
+    if repo_url is None:
+        raise ValueError("URL not provided")
+    if template_name is None:
+        raise ValueError("Template name not provided")
 
     repo_base_dir = f"{repos_dir}/{stack_name}"
     if os.path.exists(repo_base_dir):
         # todo update repo or delete and clone
         raise ValueError(f"Repository directory {repo_base_dir} already exists")
 
-    # using gitpython
-    # clone git repo to repo_base_dir
-
     git.Repo.clone_from(repo_url, repo_base_dir)
     print(f"Repository cloned to {repo_base_dir}")
 
     template_dir = f"{repo_base_dir}/{template_name}"
-    return init_stack_from_template_dir(stack_name, template_dir, parameters)
+    return stack_from_template_dir(stack_name, template_dir, parameters)
 
 
-def init_stack_from_template_dir(stack_name, template_dir, parameters):
+def stack_from_template_dir(stack_name, template_dir=None, parameters=None):
     """
     Launch a stack from a template
 
@@ -153,16 +120,20 @@ def init_stack_from_template_dir(stack_name, template_dir, parameters):
     :param template_dir: Directory containing the template
     :param parameters: Parameters to pass to the template
     """
-    stack_base_dir = f"{stacks_dir}/{stack_name}"
-    if os.path.exists(stack_base_dir):
-        raise ValueError(f"Stack directory {stack_base_dir} already exists")
-
-    os.makedirs(stack_base_dir, exist_ok=True)
-    if not os.path.exists(stack_base_dir):
-        raise ValueError(f"Stack directory {stack_base_dir} could not be created")
-
+    # stack_base_dir = f"{stacks_dir}/{stack_name}"
+    # if os.path.exists(stack_base_dir):
+    #     raise ValueError(f"Stack directory {stack_base_dir} already exists")
+    #
+    # os.makedirs(stack_base_dir, exist_ok=True)
+    # if not os.path.exists(stack_base_dir):
+    #     raise ValueError(f"Stack directory {stack_base_dir} could not be created")
+    if template_dir is None:
+        raise ValueError("Template directory not provided")
     if not os.path.exists(template_dir):
         raise ValueError(f"Template not found at {template_dir}")
+
+    stack = _init_stack(stack_name)
+    stack_base_dir = stack.project_dir
 
     for root, dirs, files in os.walk(template_dir):
         for file in files:
@@ -177,4 +148,15 @@ def init_stack_from_template_dir(stack_name, template_dir, parameters):
             with open(stack_file_path, 'w') as f:
                 f.write(content)
 
-    return stack_base_dir
+    return stack
+
+
+
+def stack_from_portainer_template(stack, template_url=None, template_name=None, **kwargs):
+    if template_url is None:
+        raise ValueError("Templates URL not provided")
+    if template_name is None:
+        raise ValueError("Template name not provided")
+
+    # todo download the portainer templates url, extract the template, and build the stack
+    pass

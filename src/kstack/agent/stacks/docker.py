@@ -12,7 +12,7 @@ class DockerComposeStack(ContainerStack):
         #self.attrs = {}
         self.project_dir = os.path.join(settings.AGENT_DATA_DIR, 'stacks', self.name)
         self.managed = True
-        self.running = False
+
 
     @staticmethod
     def _map_kwargs(kwargs):
@@ -33,7 +33,8 @@ class DockerComposeStack(ContainerStack):
                     args.append(str(v))
         return args
 
-    def _compose(self, cmd, **kwargs):
+
+    def _compose(self, cmd, **kwargs) -> bytes:
         """
         Run a docker compose command
         :param cmd: Command to run
@@ -85,6 +86,7 @@ class DockerComposeStack(ContainerStack):
         except Exception as e:
             print(e)
             raise e
+
 
     def start(self, **kwargs):
         """
@@ -144,8 +146,7 @@ class DockerComposeStack(ContainerStack):
             "name": self.name,
             "project_dir": self.project_dir,
             #"attrs": self.attrs,
-            "managed": self.managed,
-            "running": self.running
+            "managed": self.managed
         }
 
     # @classmethod

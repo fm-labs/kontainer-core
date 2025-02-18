@@ -4,7 +4,7 @@ import os
 AGENT_HOST = os.getenv("AGENT_HOST", "127.0.0.1")
 AGENT_PORT = int(os.getenv("AGENT_PORT", "5000"))
 
-AGENT_DATA_DIR = os.getenv("AGENT_DATA_DIR", "/app/data")
+AGENT_DATA_DIR = os.getenv("AGENT_DATA_DIR", "./data")
 
 AGENT_ENABLE_DOCKER = os.getenv("AGENT_ENABLE_DOCKER", "true").lower() == "true"
 AGENT_ENABLE_KUBERNETES = os.getenv("AGENT_ENABLE_KUBERNETES", "false").lower() == "true"

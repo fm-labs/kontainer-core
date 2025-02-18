@@ -1,6 +1,8 @@
 
-from kstack.agent.app import app
+#from kstack.agent.app import app
+from kstack.agent.srv import app # ! Importing from 'srv' module not 'app' module !
 from kstack.agent import settings
+
 
 if __name__ == '__main__':
     #host = os.getenv("AGENT_HOST", "127.0.0.1")

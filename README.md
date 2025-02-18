@@ -6,6 +6,10 @@ Exposes a REST api for managing docker containers.
 ## Quick Start
 
 ```bash
+docker pull fmlabs/kstack-agent:latest
+```
+
+```bash
 docker run -d \
   --name kstack-agent \
   --restart always \

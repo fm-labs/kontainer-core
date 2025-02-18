@@ -2,8 +2,15 @@ import sys
 
 sys.path.append("./src")
 
-from kstack.agent.app import app
+from kstack.agent.srv import app # ! Importing from 'srv' module not 'app' module !
 from kstack.agent import settings
+
+# Make sure all tasks are imported, so that Celery can find them
+from kstack.agent.celery import celery
+from kstack.agent.admin.tasks import *
+from kstack.agent.docker.tasks import *
+from kstack.agent.stacks.tasks import *
+
 
 if __name__ == '__main__':
     #host = os.getenv("AGENT_HOST", "127.0.0.1")

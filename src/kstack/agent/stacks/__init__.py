@@ -26,3 +26,9 @@ class ContainerStack(metaclass=ABCMeta):
         return {
             "name": self.name,
         }
+    
+    def to_dict(self):
+        return self.serialize()
+
+    def __str__(self):
+        return f"ContainerStack: {self.name}"

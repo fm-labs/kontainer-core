@@ -64,17 +64,13 @@ class StacksManager:
         del cls.initializers[initializer_name]
 
     @classmethod
-    def create_stack(cls, name, **kwargs):
+    def create_stack(cls, name, initializer_name=None, **kwargs):
         if cls.get(name) is not None:
             raise ValueError(f"Stack {name} already exists")
 
-        initializer_name = kwargs.get("launcher")
-        if initializer_name is None:
-            raise ValueError("Initializer not provided")
-
         initializer = cls.initializers.get(initializer_name)
         if initializer is None:
-            raise ValueError(f"Initializer not found: {initializer_name}")
+            raise ValueError(f"Initializer not registered: {initializer_name}")
 
         stack = initializer(name, **kwargs)
         cls.add(stack)
