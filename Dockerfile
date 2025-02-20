@@ -11,7 +11,9 @@ RUN apt-get update && \
     gnupg2 \
     lsb-release \
     ca-certificates \
-    nginx
+    nginx \
+    redis-server \
+    supervisor
 
 # Add Docker's official GPG key:
 RUN install -m 0755 -d /etc/apt/keyrings \
@@ -30,6 +32,7 @@ RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io d
 # Verify Docker installation
 #RUN which docker && docker --version
 
+
 WORKDIR /app
 
 # Install python dependencies
@@ -41,9 +44,13 @@ RUN pip install poetry \
 # Copy the rest of the code
 COPY ./src /app/src
 COPY ./agent.py /app/agent.py
+COPY ./celery_worker.sh /app/celery_worker.sh
 
-# Nginx
+# Configure Nginx
 COPY ./docker/nginx/default.conf /etc/nginx/sites-available/default
+
+# Configure Supervisor
+COPY ./docker/supervisor/celery_worker.conf /etc/supervisor/conf.d/celery_worker.conf
 
 # Entry point
 COPY ./docker/entrypoint.sh /entrypoint.sh

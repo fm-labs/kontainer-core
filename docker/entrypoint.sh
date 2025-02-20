@@ -5,9 +5,27 @@ KUSER=kstack
 init_services() {
 
   if ! service nginx start ; then
-    echo "Failed to start nginx"
+    echo "ERROR: Failed to start nginx"
     tail /var/log/nginx/error.log
     exit 1
+  fi
+
+  if ! service redis-server start ; then
+    echo "ERROR: Failed to start redis-server"
+    tail /var/log/redis/redis-server.log
+    #exit 1
+  fi
+
+  #if ! service supervisor restart ; then
+  if ! supervisord -c /etc/supervisor/supervisord.conf ; then
+    echo "ERROR: Failed to start supervisor"
+    #tail /var/log/redis/redis-server.log
+    exit 1
+  fi
+
+  if ! supervisorctl start celery_worker ; then
+    echo "WARN: Failed to start celery_worker"
+    #exit 1
   fi
 }
 
@@ -48,7 +66,6 @@ case $1 in
 
     echo "Starting devserver ..."
     exec python3 /app/agent.py
-
     ;;
 
   "gunicorn-tcp")
@@ -81,6 +98,11 @@ case $1 in
       --log-level=${LOG_LEVEL} \
       --log-file=-
 
+    ;;
+
+  "celery-worker")
+    echo "Starting celery worker ..."
+    exec /app/celery_worker.sh
     ;;
 
   *)
