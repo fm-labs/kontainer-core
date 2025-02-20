@@ -9,7 +9,8 @@ def create_stack_task(self, stack_name, initializer_name, **kwargs):
         raise ValueError(f"Stack {stack_name} already exists")
 
     print(f"Creating stack {stack_name}")
-    return StacksManager.create_stack(stack_name, initializer_name, **kwargs)
+    stack = StacksManager.create_stack(stack_name, initializer_name, **kwargs)
+    return stack.__dict__
 
 
 @celery.task(bind=True)
@@ -50,5 +51,6 @@ def delete_stack_task(self, stack_name):
         raise ValueError(f"Stack {stack_name} not found")
 
     print(f"Delete stack {stack_name}")
-    pass
-    #return stack.delete()
+    result = stack.delete()
+    StacksManager.remove(stack_name)
+    return result

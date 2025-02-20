@@ -17,7 +17,7 @@ dkr = DockerManager()
 @stacks_api_bp.route('/stacks', methods=["GET"])
 def list_stacks():
     #time_start = time.time()
-    #StacksManager.enumerate()
+    StacksManager.enumerate()
     managed_stacks = list(StacksManager.list_all())
     managed_names = [s.name for s in managed_stacks]
     #print(f"Enumerated stacks in {time.time() - time_start} seconds")
@@ -54,7 +54,7 @@ def start_stack(name):
         result = start_stack_task(name)
     else:
         task = start_stack_task.apply_async(args=[name])
-        result = { "task_id": task.id }
+        result = { "task_id": task.id, "ref": f"/docker/stacks/{name}" }
     return jsonify(result)
 
 
@@ -65,7 +65,7 @@ def stop_stack(name):
         result = stop_stack_task(name)
     else:
         task = stop_stack_task.apply_async(args=[name])
-        result = { "task_id": task.id }
+        result = { "task_id": task.id, "ref": f"/docker/stacks/{name}" }
     return jsonify(result)
 
 
@@ -76,7 +76,7 @@ def remove_stack(name):
         result = delete_stack_task(name)
     else:
         task = delete_stack_task.apply_async(args=[name])
-        result = { "task_id": task.id }
+        result = { "task_id": task.id, "ref": f"/docker/stacks/{name}" }
     return jsonify(result)
 
 
@@ -92,7 +92,7 @@ def restart_stack(name):
         result = restart_stack_task(name)
     else:
         task = restart_stack_task.apply_async(args=[name])
-        result = { "task_id": task.id }
+        result = { "task_id": task.id, "ref": f"/docker/stacks/{name}" }
     return jsonify(result)
 
 
@@ -101,13 +101,16 @@ def create_stack():
     request_json = flask.request.json
 
     try:
-        stack_name = request_json.get("stack_name")
-        if stack_name is None:
+        stack_name = request_json.get("stack_name", "").strip()
+        if stack_name is None or stack_name == "":
             raise ValueError("stack_name is required")
         del request_json["stack_name"]
 
-        initializer_name = request_json.get("launcher")
-        if initializer_name is None:
+        if StacksManager.get(stack_name) is not None:
+            raise ValueError(f"Stack {stack_name} already exists")
+
+        initializer_name = request_json.get("launcher", "").strip()
+        if initializer_name is None or initializer_name == "":
             raise ValueError("launcher is required")
         del request_json["launcher"]
 
@@ -116,7 +119,7 @@ def create_stack():
             result = create_stack_task(stack_name, initializer_name, **request_json)
         else:
             task = create_stack_task.apply_async(args=[stack_name, initializer_name], kwargs=request_json)
-            result = { "task_id": task.id }
+            result = { "task_id": task.id, "ref": f"/docker/stacks/{stack_name}"  }
         return jsonify(result)
     except Exception as e:
         # todo log error

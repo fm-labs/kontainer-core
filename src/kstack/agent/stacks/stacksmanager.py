@@ -3,7 +3,7 @@ from typing import Union
 
 from . import ContainerStack
 from .initializer import stack_from_portainer_template, stack_from_gitrepo, \
-    stack_from_compose_url, stack_from_scratch, stack_from_template_repo
+    stack_from_compose_url, stack_from_scratch, stack_from_template_repo, stack_from_template
 from .docker import DockerComposeStack
 from ..settings import AGENT_DATA_DIR
 
@@ -21,7 +21,8 @@ class StacksManager:
     # register the default initializers
     initializers = {
         "scratch": stack_from_scratch,
-        "template": stack_from_template_repo,
+        "template": stack_from_template,
+        "template_repo": stack_from_template_repo,
         #"file": stack_from_compose_file,
         #"archive": stack_from_compose_archive,
         #"dir": stack_from_compose_dir,
@@ -44,16 +45,21 @@ class StacksManager:
         cls.stacks = {}
         stacks_dir = os.path.join(AGENT_DATA_DIR, 'stacks')
         os.makedirs(stacks_dir, exist_ok=True)
-        for dir_name in os.listdir(stacks_dir):
-            stack_dir = os.path.join(stacks_dir, dir_name)
-            if os.path.isdir(stack_dir):
-                docker_compose = os.path.join(stack_dir, "docker-compose.yml")
+        for file in os.listdir(stacks_dir):
+            file_path = os.path.join(stacks_dir, file)
+            if os.path.isdir(file_path):
+                docker_compose = os.path.join(file_path, "docker-compose.yml")
                 if os.path.exists(docker_compose):
-                    stack = DockerComposeStack(dir_name)
+                    stack = DockerComposeStack(file)
                     cls.add(stack)
-                    print(f"Added {stack.name}")
+                    print(f"Added from dir {stack.name}")
                 else:
-                    print(f"Skipping {stack_dir}")
+                    print(f"Skipping {file_path}")
+            elif os.path.isfile(file_path) and file.endswith(".stack.json"):
+                stack_name = file.replace(".stack.json", "")
+                stack = DockerComposeStack(stack_name)
+                cls.add(stack)
+                print(f"Added from Json {stack.name}")
 
     @classmethod
     def register_initializer(cls, initializer_name, initializer):
@@ -108,8 +114,8 @@ class StacksManager:
         if name not in cls.stacks:
             raise ValueError(f"Stack {name} not found")
         stack = cls.stacks[name]
-        stack.remove()
-        #del cls.stacks[name]
+        #stack.remove()
+        del cls.stacks[name]
         return stack
 
     @classmethod
@@ -134,3 +140,32 @@ class StacksManager:
     #         stack.restart()
     #     return cls.stacks.values()
 
+    @classmethod
+    def sync(cls, name) -> ContainerStack:
+
+        if name not in cls.stacks:
+            raise ValueError(f"Stack {name} not found")
+        stack = cls.stacks[name]
+
+        meta = stack.meta
+        if meta is None:
+            raise ValueError("No metadata found")
+
+        repo = meta.get("repository", None)
+        if repo is not None:
+            return cls._sync_repo(stack, repo)
+
+        compose_url = meta.get("compose_url", None)
+        if compose_url is not None:
+            return cls._sync_compose_url(stack, compose_url)
+
+        print("No sync source detected")
+        return stack
+
+    @classmethod
+    def _sync_repo(cls, stack, repo):
+        raise NotImplementedError("Syncing from a repository is not implemented")
+
+    @classmethod
+    def _sync_compose_url(cls, stack, compose_url):
+        raise NotImplementedError("Syncing from a compose URL is not implemented")
