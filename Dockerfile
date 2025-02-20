@@ -59,8 +59,8 @@ CMD ["devserver"]
 
 # Health check
 HEALTHCHECK --interval=60s --timeout=3s --retries=3 \
- CMD curl --fail http://localhost:5000/ || exit 1
+ CMD curl --fail http://localhost:${AGENT_PORT}/ || exit 1
 
 
-EXPOSE 5000
+EXPOSE ${AGENT_PORT}
 EXPOSE 80
