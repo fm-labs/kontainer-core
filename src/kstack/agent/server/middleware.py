@@ -5,13 +5,20 @@ from flask import request, jsonify
 def auth_token_middleware(app):
 
     @app.before_request
-    def check_header():
+    def before_request():
+
         # Check if the request is an OPTIONS request
         if request.method == "OPTIONS":
             return
 
-        required_key = "x-api-key"  # The required header key
+        # Check if the request is an GET request and the path is / or /health
+        if request.method == "GET" and request.path == "/":
+            return
+        if request.method == "GET" and request.path == "/health":
+            return
 
+        # Extract the API key from the request headers
+        required_key = "x-api-key"
         headers = {k.lower(): v for k, v in request.headers.items()}
         api_key = headers.get(required_key)
         if not api_key:
