@@ -32,7 +32,6 @@ RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io d
 # Verify Docker installation
 #RUN which docker && docker --version
 
-
 WORKDIR /app
 
 # Install python dependencies
@@ -57,10 +56,10 @@ COPY ./docker/entrypoint.sh /entrypoint.sh
 RUN ["chmod", "+x", "/entrypoint.sh"]
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["devserver"]
-#CMD ["python", "/app/agent.py"]
 
 # Health check
-HEALTHCHECK CMD curl --fail http://localhost:5000/ || exit 1
+HEALTHCHECK --interval=60s --timeout=3s --retries=3 \
+ CMD curl --fail http://localhost:5000/ || exit 1
 
 
 EXPOSE 5000
