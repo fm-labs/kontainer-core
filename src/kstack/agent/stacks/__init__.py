@@ -17,45 +17,48 @@ class ContainerStack(metaclass=ABCMeta):
 
 
     def __str__(self):
-        return f"ContainerStack: {self.name}"
+        return f"Stack: {self.name}"
 
     @property
-    def meta(self):
+    def meta(self) -> dict:
         if self._meta is None:
             self.load()
         return self._meta
 
     @abstractmethod
-    def start(self):
+    def up(self) -> bytes:
         pass
 
     @abstractmethod
-    def stop(self):
+    def down(self) -> bytes:
         pass
 
     @abstractmethod
-    def remove(self):
+    def stop(self) -> bytes:
         pass
 
     @abstractmethod
-    def restart(self):
+    def restart(self) -> bytes:
         pass
 
     @abstractmethod
-    def delete(self):
+    def destroy(self) -> bytes:
         pass
 
-    def load(self):
+    def load(self) -> None:
         with open(self.project_file, "r") as f:
             self._meta = json.load(f)
 
-    def dump(self):
+    def dump(self) -> None:
         with open(self.project_file, "w") as f:
             json.dump(self._meta, f, indent=2)
 
-    def serialize(self):
+    def serialize(self) -> dict:
         return {
             "name": self.name,
+            "project_dir": self.project_dir,
+            "managed": self.managed,
+            "meta": self.meta
         }
 
     def to_dict(self):

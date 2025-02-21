@@ -2,38 +2,54 @@ import flask
 from flask import jsonify, request
 
 from kstack.agent.celery import celery
-from kstack.agent.admin.tasks import long_running_task
+from kstack.agent.admin.tasks import long_running_task, resolve_task
 
 tasks_api_bp = flask.Blueprint('tasks_api', __name__, url_prefix='/api/tasks')
 
 
-@tasks_api_bp.route('/', methods=["GET"])
-def list_tasks():
-    tasks = list()
-    return jsonify(tasks)
+# @tasks_api_bp.route('/', methods=["GET"])
+# def list_tasks():
+#     tasks = list()
+#     return jsonify(tasks)
 
 
-@tasks_api_bp.route('/submit', methods=['POST'])
+@tasks_api_bp.route('/', methods=['POST'])
 def submit_task():
     """Accepts a task submission request and returns a task ID."""
     data = request.get_json()
-    duration = data.get('duration', 10)  # Default duration is 10 seconds
-    task = long_running_task.apply_async(args=[duration])
+
+    task_name = data.get('task_name', None)
+    if task_name is None:
+        return jsonify({'error': 'task_name is required'}), 400
+
+    del data['task_name']
+    task = resolve_task(task_name, data)
+    if task is None:
+        return jsonify({'error': f'Task {task_name} not found'}), 404
+
     return jsonify({'task_id': task.id}), 202
 
 
-@tasks_api_bp.route('/status/<task_id>', methods=['GET'])
-def get_status(task_id):
+@tasks_api_bp.route('/<string:task_id>/status', methods=['GET'])
+def get_task_status(task_id):
     """Fetches the status of a submitted task."""
-    task = celery.AsyncResult(task_id)
 
-    if task.state == 'PENDING':
-        response = {'status': 'PENDING'}
-    elif task.state == 'PROGRESS':
-        response = {'status': 'IN_PROGRESS', 'progress': task.info}
-    elif task.state == 'SUCCESS':
-        response = {'status': 'COMPLETED', 'result': task.result}
-    else:
-        response = {'status': task.state, 'error': str(task.info)}
+    try:
+        task = celery.AsyncResult(task_id)
+        if task is None:
+            return jsonify({'error': 'Task not found'}), 404
 
-    return jsonify(response)
+        print(task_id, task.state, task)
+        response = dict()
+        response['task_id'] = task_id
+        response['status'] = task.state
+        if task.state == 'PROGRESS':
+            response['progress'] = task.info
+        elif task.state == 'SUCCESS':
+            response['result'] = task.result
+        elif task.state == 'FAILURE':
+            response['error'] = str(task.info)
+
+        return jsonify(response)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

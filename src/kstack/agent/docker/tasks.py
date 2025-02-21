@@ -2,30 +2,30 @@ from kstack.agent.celery import celery
 from kstack.agent.docker.dkr import dkr
 
 @celery.task(bind=True)
-def start_container(self, key) -> str:
-    dkr.start_container(key)
-    return key
+def container_start_task(self, container_id):
+    dkr.start_container(container_id)
 
 
 @celery.task(bind=True)
-def pause_container(self, key) -> str:
-    dkr.pause_container(key)
-    return key
+def container_pause_task(self, container_id):
+    dkr.pause_container(container_id)
 
 
 @celery.task(bind=True)
-def stop_container(self, key) -> str:
-    dkr.stop_container(key)
-    return key
+def container_stop_task(self, container_id):
+    dkr.stop_container(container_id)
 
 
 @celery.task(bind=True)
-def restart_container(self, key) -> str:
-    dkr.restart_container(key)
-    return key
+def container_restart_task(self, container_id):
+    dkr.restart_container(container_id)
 
 
 @celery.task(bind=True)
-def pull_image(self, key) -> str:
-    dkr.pull_image(key)
-    return key
+def container_delete_task(self, container_id):
+    dkr.remove_container(container_id)
+
+
+@celery.task(bind=True)
+def image_pull_task(self, container_id):
+    dkr.pull_image(container_id)

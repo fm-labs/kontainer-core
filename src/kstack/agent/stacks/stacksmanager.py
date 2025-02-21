@@ -1,10 +1,13 @@
 import os
 from typing import Union
 
+from docker.constants import DEFAULT_TIMEOUT_SECONDS
+
 from . import ContainerStack
 from .initializer import stack_from_portainer_template, stack_from_gitrepo, \
     stack_from_compose_url, stack_from_scratch, stack_from_template_repo, stack_from_template
 from .docker import DockerComposeStack
+from .sync import sync_stack
 from ..settings import AGENT_DATA_DIR
 
 
@@ -61,16 +64,19 @@ class StacksManager:
                 cls.add(stack)
                 print(f"Added from Json {stack.name}")
 
+
     @classmethod
     def register_initializer(cls, initializer_name, initializer):
         cls.initializers[initializer_name] = initializer
+
 
     @classmethod
     def deregister_initializer(cls, initializer_name):
         del cls.initializers[initializer_name]
 
+
     @classmethod
-    def create_stack(cls, name, initializer_name=None, **kwargs):
+    def init_stack(cls, name, initializer_name=None, **kwargs):
         if cls.get(name) is not None:
             raise ValueError(f"Stack {name} already exists")
 
@@ -82,9 +88,12 @@ class StacksManager:
         cls.add(stack)
         return stack
 
+    # MANAGE STACKS
+
     @classmethod
     def list_all(cls):
         return cls.stacks.values()
+
 
     @classmethod
     def add(cls, stack) -> None:
@@ -93,30 +102,6 @@ class StacksManager:
             return
         cls.stacks[stack.name] = stack
 
-    @classmethod
-    def start(cls, name) -> ContainerStack:
-        if name not in cls.stacks:
-            raise ValueError(f"Stack {name} not found")
-        stack = cls.stacks[name]
-        stack.start()
-        return stack
-
-    @classmethod
-    def stop(cls, name) -> ContainerStack:
-        if name not in cls.stacks:
-            raise ValueError(f"Stack {name} not found")
-        stack = cls.stacks[name]
-        stack.stop()
-        return stack
-
-    @classmethod
-    def remove(cls, name) -> ContainerStack:
-        if name not in cls.stacks:
-            raise ValueError(f"Stack {name} not found")
-        stack = cls.stacks[name]
-        #stack.remove()
-        del cls.stacks[name]
-        return stack
 
     @classmethod
     def get(cls, name) -> Union[ContainerStack, None]:
@@ -126,46 +111,80 @@ class StacksManager:
         stack = cls.stacks[name]
         return stack
 
+
     @classmethod
-    def restart(cls, name) -> ContainerStack:
+    def remove(cls, name) -> None:
         if name not in cls.stacks:
             raise ValueError(f"Stack {name} not found")
         stack = cls.stacks[name]
-        stack.restart()
+        del cls.stacks[name]
         return stack
 
-    # @classmethod
-    # def restart_all(cls):
-    #     for stack in cls.stacks.values():
-    #         stack.restart()
-    #     return cls.stacks.values()
+
+    # STACK OPERATIONS
 
     @classmethod
-    def sync(cls, name) -> ContainerStack:
-
+    def start(cls, name) -> bytes:
         if name not in cls.stacks:
             raise ValueError(f"Stack {name} not found")
         stack = cls.stacks[name]
+        return stack.up()
 
-        meta = stack.meta
-        if meta is None:
-            raise ValueError("No metadata found")
-
-        repo = meta.get("repository", None)
-        if repo is not None:
-            return cls._sync_repo(stack, repo)
-
-        compose_url = meta.get("compose_url", None)
-        if compose_url is not None:
-            return cls._sync_compose_url(stack, compose_url)
-
-        print("No sync source detected")
-        return stack
 
     @classmethod
-    def _sync_repo(cls, stack, repo):
-        raise NotImplementedError("Syncing from a repository is not implemented")
+    def stop(cls, name) -> bytes:
+        if name not in cls.stacks:
+            raise ValueError(f"Stack {name} not found")
+        stack = cls.stacks[name]
+        return stack.stop()
+
 
     @classmethod
-    def _sync_compose_url(cls, stack, compose_url):
-        raise NotImplementedError("Syncing from a compose URL is not implemented")
+    def delete(cls, name) -> bytes:
+        if name not in cls.stacks:
+            raise ValueError(f"Stack {name} not found")
+        stack = cls.stacks[name]
+        return stack.down()
+
+
+    @classmethod
+    def destroy(cls, name, shutil=None, **kwargs) -> bytes:
+        if name not in cls.stacks:
+            raise ValueError(f"Stack {name} not found")
+        stack = cls.stacks[name]
+        out = b""
+        out += stack.down()
+        out += stack.destroy()
+
+        if os.path.exists(stack.project_dir):
+            # Run docker compose down
+            kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
+            out += stack._compose("down", **kwargs)
+
+            # Remove the project directory recursively with shutil.rmtree
+            shutil.rmtree(stack.project_dir)
+
+            out += bytes(f"\n\nDeleted project directory {stack.project_dir}", 'utf-8')
+
+        if os.path.exists(stack.project_file):
+            os.remove(stack.project_file)
+            out += bytes(f"\n\nDeleted project file {stack.project_file}", 'utf-8')
+
+        del cls.stacks[name]
+        return out
+
+
+    @classmethod
+    def restart(cls, name) -> bytes:
+        if name not in cls.stacks:
+            raise ValueError(f"Stack {name} not found")
+        stack = cls.stacks[name]
+        return stack.restart()
+
+
+    @classmethod
+    def sync(cls, name) -> bytes:
+        if name not in cls.stacks:
+            raise ValueError(f"Stack {name} not found")
+        stack = cls.stacks[name]
+        return sync_stack(stack)

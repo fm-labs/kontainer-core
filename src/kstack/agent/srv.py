@@ -10,6 +10,7 @@ from .server.images_api import images_api_bp
 #from .server.kube_pods_api import kube_pods_api_bp
 from .server.networks_api import networks_api_bp
 from .server.stacks_api import stacks_api_bp
+from .server.tasks_api import tasks_api_bp
 from .server.volumes_api import volumes_api_bp
 
 from .stacks.stacksmanager import StacksManager
@@ -27,6 +28,7 @@ def index():
 # Admin API
 app.register_blueprint(environments_api_bp)
 # app.register_blueprint(system_api_bp)
+app.register_blueprint(tasks_api_bp)
 
 # Docker API
 app.register_blueprint(engine_api_bp)

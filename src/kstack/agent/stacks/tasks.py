@@ -9,48 +9,47 @@ def create_stack_task(self, stack_name, initializer_name, **kwargs):
         raise ValueError(f"Stack {stack_name} already exists")
 
     print(f"Creating stack {stack_name}")
-    stack = StacksManager.create_stack(stack_name, initializer_name, **kwargs)
+    stack = StacksManager.init_stack(stack_name, initializer_name, **kwargs)
     return stack.__dict__
 
 
 @celery.task(bind=True)
-def start_stack_task(self, stack_name):
-    stack = StacksManager.get(stack_name)
-    if stack is None:
-        raise ValueError(f"Stack {stack_name} not found")
-
-    print(f"Starting stack {stack_name}")
-    return stack.start()
+def stack_down_task(self, stack_name):
+    print(f"Stack DOWN {stack_name}")
+    return StacksManager.start(stack_name)
 
 
 @celery.task(bind=True)
-def stop_stack_task(self, stack_name):
-    stack = StacksManager.get(stack_name)
-    if stack is None:
-        raise ValueError(f"Stack {stack_name} not found")
-
-    print(f"Stopping stack {stack_name}")
-    return stack.stop()
+def stack_start_task(self, stack_name):
+    print(f"Stack START {stack_name}")
+    return StacksManager.start(stack_name)
 
 
 @celery.task(bind=True)
-def restart_stack_task(self, stack_name):
-    stack = StacksManager.get(stack_name)
-    if stack is None:
-        raise ValueError(f"Stack {stack_name} not found")
-
-    print(f"Restarting stack {stack_name}")
-    return stack.restart()
-
+def stack_stop_task(self, stack_name):
+    print(f"Stack STOP {stack_name}")
+    return StacksManager.stop(stack_name)
 
 
 @celery.task(bind=True)
-def delete_stack_task(self, stack_name):
-    stack = StacksManager.get(stack_name)
-    if stack is None:
-        raise ValueError(f"Stack {stack_name} not found")
+def stack_restart_task(self, stack_name):
+    print(f"Stack RESTART {stack_name}")
+    return StacksManager.restart(stack_name)
 
-    print(f"Delete stack {stack_name}")
-    result = stack.delete()
-    StacksManager.remove(stack_name)
-    return result
+
+@celery.task(bind=True)
+def stack_delete_task(self, stack_name):
+    print(f"Stack DELETE {stack_name}")
+    return StacksManager.delete(stack_name)
+
+
+@celery.task(bind=True)
+def stack_destroy_task(self, stack_name):
+    print(f"Stack DESTROY {stack_name}")
+    return StacksManager.destroy(stack_name)
+
+
+@celery.task(bind=True)
+def stack_sync_task(self, stack_name):
+    print(f"Stack SYNC {stack_name}")
+    return StacksManager.sync(stack_name)

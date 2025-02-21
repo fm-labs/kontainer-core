@@ -26,6 +26,45 @@ def git_clone(repo: str, dest: str, **kwargs) -> bytes:
     return git(["clone", repo, dest], **kwargs)
 
 
+def git_update(working_dir=None, force=False, reset=False, **kwargs) -> bytes:
+    """
+    Update a git repository.
+
+    Runs a git pull command.
+    Forces a pull from the remote repository, overwriting any local changes.
+
+    How Jenkins does it:
+      > git rev-parse --resolve-git-dir /var/jenkins_home/workspace/example/.git # timeout=10
+     Fetching changes from the remote Git repository
+      > git config remote.origin.url git@git-server:example.git # timeout=10
+     Fetching upstream changes from git@git-server:example.git
+      > git --version # timeout=10
+      > git --version # 'git version 2.39.2'
+     using GIT_SSH to set credentials Buildserver SSH keys
+     Verifying host key using known hosts file, will automatically accept unseen keys
+      > git fetch --tags --force --progress -- git@git-server:example.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+     Seen branch in repository origin/dev
+     Seen branch in repository origin/main
+     Seen 2 remote branches
+      > git show-ref --tags -d # timeout=10
+     Checking out Revision 92888d3003585ce11bf317ed04baa30044d2ccbd (origin/main, refs/tags/2.3.1-alpha.3)
+      > git config core.sparsecheckout # timeout=10
+      > git checkout -f 92888d3003585ce11bf317ed04baa30044d2ccbd # timeout=10
+     Commit message: "Initial commit"
+      > git rev-list --no-walk 22752c774c5cfdd3f6f5456c310de22e892cc067 # timeout=10
+
+    :param working_dir: Working directory
+    :param kwargs: Additional arguments to pass to git pull
+    :return:
+    """
+    if reset:
+        git(["reset", "--hard"], working_dir=working_dir)
+
+    if force:
+        kwargs["force"] = True
+    return git(["pull"], working_dir=working_dir, **kwargs)
+
+
 def git(cmd: list, working_dir=None, ssh_private_key=None, **kwargs) -> bytes:
     """
     Run a docker git command
@@ -60,6 +99,8 @@ def git(cmd: list, working_dir=None, ssh_private_key=None, **kwargs) -> bytes:
         penv = dict()
         penv['PATH'] = os.getenv('PATH')
         penv['PWD'] = working_dir
+
+        penv['GIT_TERMINAL_PROMPT'] = '0' # disable prompting for credentials (git 2.3+)
         penv['GIT_SSH_COMMAND'] = ssh_command
 
         # # Load .env file into 'penv'

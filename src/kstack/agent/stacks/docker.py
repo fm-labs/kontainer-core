@@ -108,22 +108,12 @@ class DockerComposeStack(ContainerStack):
         return meta
 
 
-
-    def ps(self, **kwargs) -> bytes:
-        """
-        Get the status of the stack
-
-        Runs docker compose ps
-
-        :param kwargs: Additional arguments to pass to docker compose ps
-        """
-        return self._compose("ps", **kwargs)
-
-
-    def start(self, **kwargs) -> bytes:
+    def up(self, **kwargs) -> bytes:
         """
         Start the stack
         https://docs.docker.com/reference/cli/docker/compose/up/
+
+        Runs docker compose up
 
         :param kwargs: Additional arguments to pass to docker compose up
         """
@@ -137,6 +127,20 @@ class DockerComposeStack(ContainerStack):
         return self._compose("up", **kwargs)
 
 
+    def down(self, **kwargs) -> bytes:
+        """
+        Remove the stack.
+
+        Runs docker compose down
+
+        :param kwargs: Additional arguments to pass to docker compose down
+        """
+        print(f"COMPOSE DOWN {self.name} in {self.project_dir}")
+
+        kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
+        return self._compose("down", **kwargs)
+
+
     def stop(self, **kwargs) -> bytes:
         """
         Stop the stack.
@@ -145,66 +149,47 @@ class DockerComposeStack(ContainerStack):
 
         :param kwargs: Additional arguments to pass to docker compose stop
         """
-        print(f"Stopping project {self.name} in {self.project_dir}")
+        print(f"COMPOSE STOP {self.name} in {self.project_dir}")
 
         kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
         return self._compose("stop", **kwargs)
 
 
-    def remove(self, **kwargs) -> bytes:
-        """
-        Remove the stack.
-
-        Runs docker compose down
-
-        :param kwargs: Additional arguments to pass to docker compose down
-        """
-        print(f"Removing project {self.name} in {self.project_dir}")
-
-        kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
-        return self._compose("down", **kwargs)
-
-
     def restart(self, **kwargs) -> bytes:
-        print(f"Restarting project {self.name} in {self.project_dir}")
+        print(f"COMPOSE RESTART {self.name} in {self.project_dir}")
 
         # Run docker compose restart
         kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
         return self._compose("restart", **kwargs)
 
 
-    def delete(self, **kwargs) -> bytes:
-        print(f"Deleting project {self.name} in {self.project_dir}")
-
-        output = b""
-        if os.path.exists(self.project_dir):
-
-            # Run docker compose down
-            kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
-            output += self._compose("down", **kwargs)
-
-            # Remove the project directory recursively with shutil.rmtree
-            shutil.rmtree(self.project_dir)
-
-            output += bytes(f"\n\nDeleted project directory {self.project_dir}", 'utf-8')
-
-        if os.path.exists(self.project_file):
-            os.remove(self.project_file)
-            output += bytes(f"\n\nDeleted project file {self.project_file}", 'utf-8')
-
-        return output
+    def destroy(self, **kwargs) -> bytes:
+        #print(f"COMPOSE DESTROY {self.name} in {self.project_dir}")
+        # No docker-specific destroy actions needed.
+        # Just remove the project directory and the project file using the stack manager.
+        pass
 
 
-    def serialize(self) -> dict:
-        return {
-            "name": self.name,
-            "project_dir": self.project_dir,
-            #"attrs": self.attrs,
-            "managed": self.managed
-        }
+    def ps(self, **kwargs) -> bytes:
+        """
+        Get the status of the stack
 
-    def to_dict(self):
-        return self.serialize()
+        Runs docker compose ps
+
+        :param kwargs: Additional arguments to pass to docker compose ps
+        """
+        return self._compose("ps", **kwargs)
+
+
+    # def serialize(self) -> dict:
+    #     return {
+    #         "name": self.name,
+    #         "project_dir": self.project_dir,
+    #         "managed": self.managed
+    #     }
+    #
+    # def to_dict(self):
+    #     return self.serialize()
 
     # @classmethod
     # def from_docker_compose(cls, project, docker_compose_path):
