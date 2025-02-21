@@ -46,6 +46,11 @@ class DockerComposeStack(ContainerStack):
         #compose_args['file'] = 'docker-compose.yml'
         #compose_args['progress'] = 'auto'
 
+        working_dir = self.project_dir
+        if self.meta:
+            base_path = self.meta.get('base_path', "")
+            working_dir = os.path.join(self.project_dir, base_path)
+
         try:
             pcmd = ((["docker", "compose"]
                     + kwargs_to_cmdargs(compose_args)) # compose specific args
@@ -59,17 +64,17 @@ class DockerComposeStack(ContainerStack):
             penv['PATH'] = os.getenv('PATH')
             penv['COMPOSE_PROJECT_NAME'] = self.name
             penv['COMPOSE_FILE'] = 'docker-compose.yml'
-            penv['COMPOSE_PROJECT_DIRECTORY'] = self.project_dir
-            penv['PWD'] = self.project_dir
+            penv['COMPOSE_PROJECT_DIRECTORY'] = working_dir
+            penv['PWD'] = working_dir
             #penv['DOCKER_HOST'] = 'unix:///var/run/docker.sock'
 
             # Load .env file into 'penv'
-            env_file = os.path.join(self.project_dir, '.env')
+            env_file = os.path.join(working_dir, '.env')
             if os.path.exists(env_file):
                 penv = load_envfile(env_file, penv)
             print(f"ENV: {penv}")
 
-            p1 = subprocess.run(pcmd, cwd=self.project_dir, env=penv, capture_output=True)
+            p1 = subprocess.run(pcmd, cwd=working_dir, env=penv, capture_output=True)
             print("STDOUT", p1.stdout)
             print("STDERR", p1.stderr)
 

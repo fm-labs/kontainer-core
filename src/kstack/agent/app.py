@@ -12,12 +12,17 @@ app.config['REPOS_DIR'] = f"{settings.AGENT_DATA_DIR}/repos"
 app.config['UPLOAD_DIR'] = f"{settings.AGENT_DATA_DIR}/uploads"
 app.config['AUTH_TOKEN'] = settings.AGENT_AUTH_TOKEN
 
+auth_token_middleware(app)
 CORS(app,
      allow_headers=["x-api-key", "x-csrf-token", "content-type"],
      methods=["GET", "POST", "OPTIONS"],
      origins=["*"])
-auth_token_middleware(app)
 
 # Celery configuration
-app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+# https://docs.celeryq.dev/en/stable/userguide/configuration.html
+app.config['CELERY_BROKER_URL'] = settings.CELERY_BROKER_URL
+#app.config['CELERY_RESULT_BACKEND'] = settings.CELERY_RESULT_BACKEND
+app.config['result_backend'] = settings.CELERY_RESULT_BACKEND
+app.config['result_expires'] = settings.CELERY_RESULT_EXPIRES
+app.config['task_time_limit'] = settings.CELERY_TASK_TIME_LIMIT
+app.config['task_soft_time_limit'] = int(settings.CELERY_TASK_TIME_LIMIT * 0.9)

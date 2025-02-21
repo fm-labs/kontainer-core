@@ -3,10 +3,10 @@ from flask import jsonify
 
 from kstack.agent.docker.dkr import dkr
 
-volumes_api_bp = flask.Blueprint('volumes_api', __name__, url_prefix='/api')
+volumes_api_bp = flask.Blueprint('volumes_api', __name__, url_prefix='/api/volumes')
 
 
-@volumes_api_bp.route('/volumes', methods=["GET"])
+@volumes_api_bp.route('', methods=["GET"])
 def list_volumes():
     """
     List all volumes

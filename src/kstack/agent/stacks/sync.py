@@ -5,21 +5,21 @@ from kstack.agent.util.git_util import git_clone, git_update
 
 
 def sync_stack(stack: ContainerStack) -> bytes:
-    out = b""
     meta = stack.meta
     if meta is None:
         raise ValueError("No metadata found")
 
     repo = meta.get("repository", None)
     if repo is not None:
-        return _sync_repo(stack, repo)
+        out = _sync_repo(stack, repo)
+        return out
 
     compose_url = meta.get("compose_url", None)
     if compose_url is not None:
-        return _sync_compose_url(stack, compose_url)
+        out = _sync_compose_url(stack, compose_url)
+        return out
 
-    return out
-
+    return b""
 
 def _sync_repo(stack: ContainerStack, repo: dict):
 

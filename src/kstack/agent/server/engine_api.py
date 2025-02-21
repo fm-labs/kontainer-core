@@ -7,10 +7,10 @@ from flask import jsonify, request, Blueprint
 
 from kstack.agent.docker.dkr import dkr
 
-engine_api_bp = Blueprint('engine_api', __name__, url_prefix='/api')
+engine_api_bp = Blueprint('engine_api', __name__, url_prefix='/api/engine')
 
 
-@engine_api_bp.route('/engine/info', methods=["GET"])
+@engine_api_bp.route('/info', methods=["GET"])
 def engine_info():
     """
     Get Engine Info
@@ -22,7 +22,7 @@ def engine_info():
     return jsonify(info_dict)
 
 
-@engine_api_bp.route('/engine/version', methods=["GET"])
+@engine_api_bp.route('/version', methods=["GET"])
 def engine_version():
     """
     Get Engine Version
@@ -33,7 +33,7 @@ def engine_version():
     return jsonify(version)
 
 
-@engine_api_bp.route('/engine/ping', methods=["GET"])
+@engine_api_bp.route('/ping', methods=["GET"])
 def engine_ping():
     """
     Get Engine Ping
@@ -44,7 +44,7 @@ def engine_ping():
     return jsonify(ping)
 
 
-@engine_api_bp.route('/engine/df', methods=["GET"])
+@engine_api_bp.route('/df', methods=["GET"])
 def engine_df():
     """
     Get Engine Disk Usage
@@ -55,7 +55,7 @@ def engine_df():
     return jsonify(df)
 
 
-@engine_api_bp.route('/engine/events', methods=["GET"])
+@engine_api_bp.route('/events', methods=["GET"])
 def engine_events():
     """
     Get Engine Events.

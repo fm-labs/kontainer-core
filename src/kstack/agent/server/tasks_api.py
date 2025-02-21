@@ -13,7 +13,7 @@ tasks_api_bp = flask.Blueprint('tasks_api', __name__, url_prefix='/api/tasks')
 #     return jsonify(tasks)
 
 
-@tasks_api_bp.route('/', methods=['POST'])
+@tasks_api_bp.route('', methods=['POST'])
 def submit_task():
     """Accepts a task submission request and returns a task ID."""
     data = request.get_json()
@@ -46,7 +46,17 @@ def get_task_status(task_id):
         if task.state == 'PROGRESS':
             response['progress'] = task.info
         elif task.state == 'SUCCESS':
-            response['result'] = task.result
+            try:
+                result = task.result
+                if type(result) == bytes:
+                    result = result.decode('utf-8')
+
+                response['result'] = result
+            except Exception as e:
+                print(e)
+                # response['error'] = str(e)
+                raise e
+
         elif task.state == 'FAILURE':
             response['error'] = str(task.info)
 

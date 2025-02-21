@@ -7,12 +7,12 @@ from ..stacks.stacksmanager import StacksManager
 from ..stacks.tasks import stack_start_task, stack_stop_task, stack_destroy_task, stack_restart_task, create_stack_task, \
     stack_delete_task, stack_sync_task
 
-stacks_api_bp = flask.Blueprint('stacks_api', __name__, url_prefix='/api')
+stacks_api_bp = flask.Blueprint('stacks_api', __name__, url_prefix='/api/stacks')
 
 dkr = DockerManager()
 
 
-@stacks_api_bp.route('/stacks', methods=["GET"])
+@stacks_api_bp.route('', methods=["GET"])
 def list_stacks():
     # time_start = time.time()
     StacksManager.enumerate()
@@ -52,76 +52,76 @@ def list_stacks():
     return jsonify(mapped)
 
 
-@stacks_api_bp.route('/stacks/<string:name>/start', methods=["POST"])
+@stacks_api_bp.route('/<string:name>/start', methods=["POST"])
 def start_stack(name):
     if request.args.get('sync', None) == "1":
         result = stack_start_task(name)
     else:
         task = stack_start_task.apply_async(args=[name])
-        result = {"task_id": task.id, "ref": f"/docker/stacks/{name}"}
+        result = {"task_id": task.id, "ref": f"/docker/{name}"}
     return jsonify(result)
 
 
-@stacks_api_bp.route('/stacks/<string:name>/stop', methods=["POST"])
+@stacks_api_bp.route('/<string:name>/stop', methods=["POST"])
 def stop_stack(name):
     # return jsonify(StacksManager.stop(name).serialize())
     if request.args.get('sync', None) == "1":
         result = stack_stop_task(name)
     else:
         task = stack_stop_task.apply_async(args=[name])
-        result = {"task_id": task.id, "ref": f"/docker/stacks/{name}"}
+        result = {"task_id": task.id, "ref": f"/docker/{name}"}
     return jsonify(result)
 
 
-@stacks_api_bp.route('/stacks/<string:name>/delete', methods=["POST"])
+@stacks_api_bp.route('/<string:name>/delete', methods=["POST"])
 def delete_stack(name):
     # return jsonify(StacksManager.remove(name).serialize())
     if request.args.get('sync', None) == "1":
         result = stack_delete_task(name)
     else:
         task = stack_delete_task.apply_async(args=[name])
-        result = {"task_id": task.id, "ref": f"/docker/stacks/{name}"}
+        result = {"task_id": task.id, "ref": f"/docker/{name}"}
     return jsonify(result)
 
 
-@stacks_api_bp.route('/stacks/<string:name>/destroy', methods=["POST"])
+@stacks_api_bp.route('/<string:name>/destroy', methods=["POST"])
 def destroy_stack(name):
     # return jsonify(StacksManager.remove(name).serialize())
     if request.args.get('sync', None) == "1":
         result = stack_destroy_task(name)
     else:
         task = stack_destroy_task.apply_async(args=[name])
-        result = {"task_id": task.id, "ref": f"/docker/stacks/{name}"}
+        result = {"task_id": task.id, "ref": f"/docker/{name}"}
     return jsonify(result)
 
 
-@stacks_api_bp.route('/stacks/<string:name>/sync', methods=["POST"])
+@stacks_api_bp.route('/<string:name>/sync', methods=["POST"])
 def sync_stack(name):
     if request.args.get('sync', None) == "1":
         result = stack_sync_task(name)
     else:
         task = stack_sync_task.apply_async(args=[name])
-        result = {"task_id": task.id, "ref": f"/docker/stacks/{name}"}
+        result = {"task_id": task.id, "ref": f"/docker/{name}"}
     return jsonify(result)
 
 
-@stacks_api_bp.route('/stacks/<string:name>', methods=["GET"])
+@stacks_api_bp.route('/<string:name>', methods=["GET"])
 def describe_stack(name):
     return jsonify(StacksManager.get(name).serialize())
 
 
-@stacks_api_bp.route('/stacks/<string:name>/restart', methods=["POST"])
+@stacks_api_bp.route('/<string:name>/restart', methods=["POST"])
 def restart_stack(name):
     # return jsonify(StacksManager.restart(name).serialize())
     if request.args.get('sync', None) == "1":
         result = stack_restart_task(name)
     else:
         task = stack_restart_task.apply_async(args=[name])
-        result = {"task_id": task.id, "ref": f"/docker/stacks/{name}"}
+        result = {"task_id": task.id, "ref": f"/docker/{name}"}
     return jsonify(result)
 
 
-@stacks_api_bp.route('/stacks/create', methods=["POST"])
+@stacks_api_bp.route('/create', methods=["POST"])
 def create_stack():
     request_json = flask.request.json
 
@@ -144,14 +144,14 @@ def create_stack():
             result = create_stack_task(stack_name, initializer_name, **request_json)
         else:
             task = create_stack_task.apply_async(args=[stack_name, initializer_name], kwargs=request_json)
-            result = {"task_id": task.id, "ref": f"/docker/stacks/{stack_name}"}
+            result = {"task_id": task.id, "ref": f"/docker/{stack_name}"}
         return jsonify(result)
     except Exception as e:
         # todo log error
         # raise e
         return jsonify({"error": str(e)}), 400
 
-# @stacks_api_bp.route('/stacks/<string:name>/upload', methods=["POST"])
+# @stacks_api_bp.route('/<string:name>/upload', methods=["POST"])
 # def upload_stack(name):
 #     """
 #     Upload a stack yml file or stack archive (zip, tar.gz)

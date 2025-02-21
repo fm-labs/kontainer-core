@@ -6,10 +6,10 @@ from kstack.agent.docker.dkr import dkr
 from kstack.agent.docker.tasks import container_start_task, container_pause_task, container_stop_task, \
     container_delete_task, container_restart_task
 
-container_api_bp = flask.Blueprint('container_api', __name__, url_prefix='/api')
+container_api_bp = flask.Blueprint('container_api', __name__, url_prefix='/api/containers')
 
 
-@container_api_bp.route('/containers', methods=["GET"])
+@container_api_bp.route('', methods=["GET"])
 def list_containers():
     containers = dkr.list_containers()
     #mapped = list(map(lambda x: x.attrs, containers))
@@ -21,12 +21,12 @@ def list_containers():
     return jsonify(mapped)
 
 
-@container_api_bp.route('/containers/<string:key>', methods=["GET"])
+@container_api_bp.route('/<string:key>', methods=["GET"])
 def describe_container(key):
     return jsonify(dkr.get_container(key).attrs)
 
 
-@container_api_bp.route('/containers/<string:key>/start', methods=["POST"])
+@container_api_bp.route('/<string:key>/start', methods=["POST"])
 def start_container(key):
     try:
         if request.args.get('async', None) == "1":
@@ -39,7 +39,7 @@ def start_container(key):
         return jsonify({"error": str(e)}), 500
 
 
-@container_api_bp.route('/containers/<string:key>/pause', methods=["POST"])
+@container_api_bp.route('/<string:key>/pause', methods=["POST"])
 def pause_container(key):
     try:
         if request.args.get('async', None) == "1":
@@ -52,7 +52,7 @@ def pause_container(key):
         return jsonify({"error": str(e)}), 500
 
 
-@container_api_bp.route('/containers/<string:key>/stop', methods=["POST"])
+@container_api_bp.route('/<string:key>/stop', methods=["POST"])
 def stop_container(key):
     try:
         if request.args.get('async', None) == "1":
@@ -65,7 +65,7 @@ def stop_container(key):
         return jsonify({"error": str(e)}), 500
 
 
-@container_api_bp.route('/containers/<string:key>/remove', methods=["POST"])
+@container_api_bp.route('/<string:key>/remove', methods=["POST"])
 def remove_container(key):
     if not settings.AGENT_ENABLE_DELETE:
         return jsonify({"error": "Delete is disabled"}), 403
@@ -81,7 +81,7 @@ def remove_container(key):
         return jsonify({"error": str(e)}), 500
 
 
-@container_api_bp.route('/containers/<string:key>/restart', methods=["POST"])
+@container_api_bp.route('/<string:key>/restart', methods=["POST"])
 def restart_container(key):
     try:
         if request.args.get('async', None) == "1":
@@ -94,7 +94,7 @@ def restart_container(key):
         return jsonify({"error": str(e)}), 500
 
 
-@container_api_bp.route('/containers/<string:key>/logs', methods=["GET"])
+@container_api_bp.route('/<string:key>/logs', methods=["GET"])
 def get_container_logs(key):
     try:
         logs = dkr.get_container_logs(key)
@@ -103,7 +103,7 @@ def get_container_logs(key):
         return jsonify({"error": str(e)}), 500
 
 
-@container_api_bp.route('/containers/<string:key>/exec', methods=["POST"])
+@container_api_bp.route('/<string:key>/exec', methods=["POST"])
 def exec_container_command(key):
     command = request.json["command"]
     try:
@@ -113,7 +113,7 @@ def exec_container_command(key):
         return jsonify({"error": str(e)}), 500
 
 
-@container_api_bp.route('/containers/create', methods=["POST"])
+@container_api_bp.route('/create', methods=["POST"])
 def create_container():
     run_data = request.json
     image = run_data["image"]
@@ -123,7 +123,7 @@ def create_container():
     container = dkr.create_container(image, **run_data)
     return jsonify(container.attrs)
 
-@container_api_bp.route('/containers/run', methods=["POST"])
+@container_api_bp.route('/run', methods=["POST"])
 def run_container():
     run_data = request.json
     image = run_data["image"]

@@ -3,11 +3,11 @@ from flask import jsonify
 
 from kstack.agent.environments.envmanager import EnvManager
 
-environments_api_bp = flask.Blueprint('environments_api', __name__, url_prefix='/api')
+environments_api_bp = flask.Blueprint('environments_api', __name__, url_prefix='/api/environments')
 
 EnvManager.enumerate_environments()
 
-@environments_api_bp.route('/environments', methods=["GET"])
+@environments_api_bp.route('', methods=["GET"])
 def list_environments():
     """
     List all environments
@@ -26,7 +26,7 @@ def list_environments():
     return jsonify(mapped)
 
 
-@environments_api_bp.route('/environments', methods=["POST"])
+@environments_api_bp.route('', methods=["POST"])
 def create_environment():
     """
     Add an env to the db
@@ -41,7 +41,7 @@ def create_environment():
         return jsonify({"error": str(e)}), 400
 
 
-@environments_api_bp.route('/environments/host/<string:alias>', methods=["GET"])
+@environments_api_bp.route('/host/<string:alias>', methods=["GET"])
 def describe_environment(alias: str):
     """
     Get an env from the db
@@ -55,7 +55,7 @@ def describe_environment(alias: str):
     return jsonify(env.to_dict())
 
 
-@environments_api_bp.route('/environments/host/<string:alias>', methods=["DELETE"])
+@environments_api_bp.route('/host/<string:alias>', methods=["DELETE"])
 def remove_environment(alias: str):
     """
     Remove an env from the db
