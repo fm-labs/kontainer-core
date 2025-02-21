@@ -53,14 +53,14 @@ class StacksManager:
             if os.path.isdir(file_path):
                 docker_compose = os.path.join(file_path, "docker-compose.yml")
                 if os.path.exists(docker_compose):
-                    stack = DockerComposeStack(file)
+                    stack = DockerComposeStack(file, managed=True)
                     cls.add(stack)
                     print(f"Added from dir {stack.name}")
                 else:
                     print(f"Skipping {file_path}")
             elif os.path.isfile(file_path) and file.endswith(".stack.json"):
                 stack_name = file.replace(".stack.json", "")
-                stack = DockerComposeStack(stack_name)
+                stack = DockerComposeStack(stack_name, managed=True)
                 cls.add(stack)
                 print(f"Added from Json {stack.name}")
 

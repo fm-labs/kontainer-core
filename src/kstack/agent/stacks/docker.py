@@ -9,8 +9,8 @@ from kstack.agent.stacks import ContainerStack
 from kstack.agent.util.subprocess_util import kwargs_to_cmdargs, load_envfile
 
 class DockerComposeStack(ContainerStack):
-    def __init__(self, name, meta=None):
-        super().__init__(name, meta)
+    def __init__(self, name, managed=False, meta=None, **kwargs):
+        super().__init__(name, managed=managed, meta=meta)
 
 
     # @staticmethod
@@ -97,15 +97,15 @@ class DockerComposeStack(ContainerStack):
         })
         return status
 
-    @property
-    def meta(self):
-        # read the stack file contents
-        meta = dict()
-        if os.path.exists(self.project_file):
-            with open(self.project_file, "r") as f:
-                meta = json.load(f)
-
-        return meta
+    # @property
+    # def meta(self):
+    #     # read the stack file contents
+    #     meta = dict()
+    #     if os.path.exists(self.project_file):
+    #         with open(self.project_file, "r") as f:
+    #             meta = json.load(f)
+    #
+    #     return meta
 
 
     def up(self, **kwargs) -> bytes:

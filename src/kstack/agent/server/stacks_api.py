@@ -11,37 +11,44 @@ stacks_api_bp = flask.Blueprint('stacks_api', __name__, url_prefix='/api')
 
 dkr = DockerManager()
 
+
 @stacks_api_bp.route('/stacks', methods=["GET"])
 def list_stacks():
-    #time_start = time.time()
+    # time_start = time.time()
     StacksManager.enumerate()
-    managed_stacks = list(StacksManager.list_all())
-    managed_names = [s.name for s in managed_stacks]
-    #print(f"Enumerated stacks in {time.time() - time_start} seconds")
+    stacks = list(StacksManager.list_all())
+    managed_names = [s.name for s in stacks]
+    # print(f"Enumerated stacks in {time.time() - time_start} seconds")
 
     # get all running containers
-    #time_start = time.time()
+    # time_start = time.time()
     containers = dkr.list_containers()
-    #print(f"Listed containers (1) in {time.time() - time_start} seconds")
-    compose_stack_names = list(set([c.attrs.get('Config', {}).get('Labels', {}).get('com.docker.compose.project') for c in containers]))
-    #print(f"Listed containers (2) in {time.time() - time_start} seconds")
+    # print(f"Listed containers (1) in {time.time() - time_start} seconds")
+    active_stack_names = list(
+        set([c.attrs.get('Config', {}).get('Labels', {}).get('com.docker.compose.project') for c in containers]))
 
-    #time_start = time.time()
-    for compose_stack_name in compose_stack_names:
-        if compose_stack_name is None:
+    # print(f"Listed containers (2) in {time.time() - time_start} seconds")
+
+    def _get_containers_for_stack(stack_name):
+        return [c.attrs for c in containers if
+                c.attrs.get('Config', {}).get('Labels', {}).get('com.docker.compose.project') == stack_name]
+
+    # time_start = time.time()
+    for active_stack_name in active_stack_names:
+        if active_stack_name is None:
             continue
-        if compose_stack_name not in managed_names:
-            stack = DockerComposeStack(compose_stack_name)
-            stack.managed = False
-            managed_stacks.append(stack)
+        if active_stack_name not in managed_names:
+            stack = DockerComposeStack(active_stack_name, managed=False)
+            stacks.append(stack)
 
     def _map_managed_stack(_stack):
-        _stack.running = _stack.name in compose_stack_names
-        _stack.managed = _stack.name in managed_names
-        return _stack.serialize()
+        stack_data = _stack.serialize()
+        stack_data['status'] = 'running' if _stack.name in active_stack_names else '-'
+        stack_data['containers'] = _get_containers_for_stack(_stack.name)
+        return stack_data
 
-    mapped = list(map(lambda x: _map_managed_stack(x), managed_stacks))
-    #print(f"Mapped stacks in {time.time() - time_start} seconds")
+    mapped = list(map(lambda x: _map_managed_stack(x), stacks))
+    # print(f"Mapped stacks in {time.time() - time_start} seconds")
     return jsonify(mapped)
 
 
@@ -51,40 +58,40 @@ def start_stack(name):
         result = stack_start_task(name)
     else:
         task = stack_start_task.apply_async(args=[name])
-        result = { "task_id": task.id, "ref": f"/docker/stacks/{name}" }
+        result = {"task_id": task.id, "ref": f"/docker/stacks/{name}"}
     return jsonify(result)
 
 
 @stacks_api_bp.route('/stacks/<string:name>/stop', methods=["POST"])
 def stop_stack(name):
-    #return jsonify(StacksManager.stop(name).serialize())
+    # return jsonify(StacksManager.stop(name).serialize())
     if request.args.get('sync', None) == "1":
         result = stack_stop_task(name)
     else:
         task = stack_stop_task.apply_async(args=[name])
-        result = { "task_id": task.id, "ref": f"/docker/stacks/{name}" }
+        result = {"task_id": task.id, "ref": f"/docker/stacks/{name}"}
     return jsonify(result)
 
 
 @stacks_api_bp.route('/stacks/<string:name>/delete', methods=["POST"])
 def delete_stack(name):
-    #return jsonify(StacksManager.remove(name).serialize())
+    # return jsonify(StacksManager.remove(name).serialize())
     if request.args.get('sync', None) == "1":
         result = stack_delete_task(name)
     else:
         task = stack_delete_task.apply_async(args=[name])
-        result = { "task_id": task.id, "ref": f"/docker/stacks/{name}" }
+        result = {"task_id": task.id, "ref": f"/docker/stacks/{name}"}
     return jsonify(result)
 
 
 @stacks_api_bp.route('/stacks/<string:name>/destroy', methods=["POST"])
 def destroy_stack(name):
-    #return jsonify(StacksManager.remove(name).serialize())
+    # return jsonify(StacksManager.remove(name).serialize())
     if request.args.get('sync', None) == "1":
         result = stack_destroy_task(name)
     else:
         task = stack_destroy_task.apply_async(args=[name])
-        result = { "task_id": task.id, "ref": f"/docker/stacks/{name}" }
+        result = {"task_id": task.id, "ref": f"/docker/stacks/{name}"}
     return jsonify(result)
 
 
@@ -94,7 +101,7 @@ def sync_stack(name):
         result = stack_sync_task(name)
     else:
         task = stack_sync_task.apply_async(args=[name])
-        result = { "task_id": task.id, "ref": f"/docker/stacks/{name}" }
+        result = {"task_id": task.id, "ref": f"/docker/stacks/{name}"}
     return jsonify(result)
 
 
@@ -110,7 +117,7 @@ def restart_stack(name):
         result = stack_restart_task(name)
     else:
         task = stack_restart_task.apply_async(args=[name])
-        result = { "task_id": task.id, "ref": f"/docker/stacks/{name}" }
+        result = {"task_id": task.id, "ref": f"/docker/stacks/{name}"}
     return jsonify(result)
 
 
@@ -137,13 +144,12 @@ def create_stack():
             result = create_stack_task(stack_name, initializer_name, **request_json)
         else:
             task = create_stack_task.apply_async(args=[stack_name, initializer_name], kwargs=request_json)
-            result = { "task_id": task.id, "ref": f"/docker/stacks/{stack_name}"  }
+            result = {"task_id": task.id, "ref": f"/docker/stacks/{stack_name}"}
         return jsonify(result)
     except Exception as e:
         # todo log error
         # raise e
         return jsonify({"error": str(e)}), 400
-
 
 # @stacks_api_bp.route('/stacks/<string:name>/upload', methods=["POST"])
 # def upload_stack(name):
