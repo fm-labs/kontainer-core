@@ -27,8 +27,8 @@ def add_template():
     """
     data = request.get_json()
     template_id = data.get('template_id', None)
-    template_content = data.get('content', None)
-    template_url = data.get('url', None)
+    template_content = data.get('template_content', None)
+    template_url = data.get('template_url', None)
 
     if template_id is None:
         return jsonify({'error': 'template_id is required'}), 400

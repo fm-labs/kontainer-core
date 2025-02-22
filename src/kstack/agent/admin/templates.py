@@ -35,7 +35,7 @@ def write_template(name: str, content: str) -> str:
     :param content: Content of the template
     :return: Path to the new template file
     """
-    template_file = os.path.join(TEMPLATES_DIR, f"{name}.json")
+    template_file = os.path.join(TEMPLATES_DIR, f"{name}{TEMPLATES_FILE_SUFFIX}")
     #if os.path.exists(template_file):
     #    raise FileExistsError(f"Template {name} already exists")
 
