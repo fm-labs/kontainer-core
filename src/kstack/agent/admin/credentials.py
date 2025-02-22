@@ -13,6 +13,7 @@ def find_private_keys():
     """
     private_keys = []
 
+    os.makedirs(KEYS_DIR, exist_ok=True)
     for entry in os.scandir(KEYS_DIR):
         if entry.is_file() and entry.name.endswith(KEYS_FILE_SUFFIX):
             private_keys.append(entry.name.replace(KEYS_FILE_SUFFIX, ''))
@@ -52,6 +53,7 @@ def write_private_key(name: str, content: str) -> str:
     :param content: Content of the private key
     :return: Path to the new private key file
     """
+    os.makedirs(KEYS_DIR, exist_ok=True)
     key_file = os.path.join(KEYS_DIR, f"{name}{KEYS_FILE_SUFFIX}")
 
     with open(key_file, 'w') as f:

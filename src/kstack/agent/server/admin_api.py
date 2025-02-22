@@ -1,3 +1,5 @@
+import re
+
 import flask.app
 from flask import jsonify, request
 
@@ -10,16 +12,8 @@ admin_api_bp = flask.Blueprint('admin_api', __name__, url_prefix='/api/admin')
 
 @admin_api_bp.route('/registries', methods=["GET"])
 def container_registries_index():
-    registries = list_container_registries()
-
-    def _strip_credentials(registry):
-        return {
-            "name": registry["name"],
-            "host": registry["host"],
-        }
-
-    cleaned_data = list(map(_strip_credentials, registries))
-    return jsonify(cleaned_data)
+    registries = list_container_registries(safe=True)
+    return jsonify(registries)
 
 
 @admin_api_bp.route('/registries/<string:registry_name>', methods=["POST"])
@@ -45,14 +39,14 @@ def container_registries_delete(registry_name):
     return jsonify({'name': registry_name, 'status': 'deleted'}), 200
 
 
-@admin_api_bp.route('/private_keys', methods=["GET"])
+@admin_api_bp.route('/keys', methods=["GET"])
 def private_keys_index():
     private_key_ids = find_private_keys()
     return jsonify(private_key_ids)
 
 
-@admin_api_bp.route('/private_keys/', methods=["POST"])
-def private_keys_create_or_update(re=None):
+@admin_api_bp.route('/keys', methods=["POST"])
+def private_keys_create_or_update():
     data = request.get_json()
 
     key_id = data.get('key_id', '').strip()
@@ -80,7 +74,7 @@ def private_keys_create_or_update(re=None):
     return jsonify({'key_id': key_id, 'status': 'created'}), 201
 
 
-@admin_api_bp.route('/private_keys/<string:key_id>', methods=["DELETE"])
+@admin_api_bp.route('/keys/<string:key_id>', methods=["DELETE"])
 def private_keys_delete(key_id):
     key_exists = has_private_key(key_id)
     if not key_exists:

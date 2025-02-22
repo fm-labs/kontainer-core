@@ -23,6 +23,8 @@ def list_container_registries(safe=True) -> list:
             "name": registry["name"],
             "host": registry["host"] if "host" in registry else "",
             "label": registry["label"] if "label" in registry else "",
+            "username": f"*****" if "username" in registry else "",
+            "password": f"*****" if "password" in registry else "",
         }
     if safe:
         return list(map(_strip_credentials, registries))
@@ -82,6 +84,9 @@ def update_container_registry(registry_name: str, data: dict) -> list:
     :return: Updated list of container registries
     """
     registries = read_container_registries()
+
+    # Ensure the registry name is set
+    data["name"] = registry_name
 
     exists = False
     for r in registries:

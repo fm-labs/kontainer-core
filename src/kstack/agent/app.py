@@ -15,7 +15,7 @@ app.config['AUTH_TOKEN'] = settings.AGENT_AUTH_TOKEN
 auth_token_middleware(app)
 CORS(app,
      allow_headers=["x-api-key", "x-csrf-token", "content-type"],
-     methods=["GET", "POST", "OPTIONS"],
+     methods=["OPTIONS", "GET", "POST", "DELETE"],
      origins=["*"])
 
 # Celery configuration
