@@ -21,5 +21,49 @@ CELERY_TASK_TIME_LIMIT = int(os.getenv("CELERY_TASK_TIME_LIMIT", "900"))
 # Docker settings
 DOCKER_HOST = os.getenv("DOCKER_HOST", "unix:///var/run/docker.sock")
 
+# Container Registries
 
-# Kubernetes settings
+DEFAULT_CONTAINER_REGISTRIES = [
+        {
+            "name": "default",
+            "host": "hub.docker.com",
+            "label": "Docker Hub",
+            "username": "",
+            "password": "",
+        },
+        {
+            "name": "quay.io",
+            "host": "quay.io",
+            "label": "Quay.io",
+            "username": "",
+            "password": "",
+        },
+        {
+            "name": "ghcr.io",
+            "host": "ghcr.io",
+            "label": "GitHub",
+            "username": "",
+            "password": "",
+        },
+        {
+            "name": "registry.gitlab.com",
+            "host": "registry.gitlab.com",
+            "label": "GitLab",
+            "username": "",
+            "password": "",
+        },
+        {
+            "name": "123456789012.dkr.ecr.us-east-1.amazonaws.com",
+            "host": "123456789012.dkr.ecr.us-east-1.amazonaws.com",
+            "label": "AWS ECR",
+            "username": "",
+            "password": "",
+        },
+        {
+            "name": "custom-local",
+            "host": "127.0.0.1:5000",
+            "label": "Custom Container Registry",
+            "username": "",
+            "password": "",
+        },
+    ]

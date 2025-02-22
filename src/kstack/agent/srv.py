@@ -1,6 +1,7 @@
 from flask import jsonify
 
 from kstack.agent.app import app
+from .server.admin_api import admin_api_bp
 
 from .server.engine_api import engine_api_bp
 from .server.container_api import container_api_bp
@@ -8,6 +9,7 @@ from .server.environments_api import environments_api_bp
 from .server.images_api import images_api_bp
 from .server.networks_api import networks_api_bp
 from .server.stacks_api import stacks_api_bp
+from .server.system_api import system_api_bp
 from .server.tasks_api import tasks_api_bp
 from .server.templates_api import templates_api_bp
 from .server.volumes_api import volumes_api_bp
@@ -27,7 +29,8 @@ def index():
 
 # Admin API
 app.register_blueprint(environments_api_bp)
-# app.register_blueprint(system_api_bp)
+app.register_blueprint(admin_api_bp)
+app.register_blueprint(system_api_bp)
 app.register_blueprint(tasks_api_bp)
 app.register_blueprint(templates_api_bp)
 
