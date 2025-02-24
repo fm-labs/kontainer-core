@@ -3,7 +3,7 @@ import re
 import flask.app
 from flask import jsonify, request
 
-from kstack.agent.admin.credentials import has_private_key, write_private_key, delete_private_key, find_private_keys
+from kstack.agent.admin.credentials import private_key_exists, write_private_key, delete_private_key, find_private_keys
 from kstack.agent.admin.registries import update_container_registry, delete_container_registry, \
     list_container_registries
 
@@ -76,7 +76,7 @@ def private_keys_create_or_update():
 
 @admin_api_bp.route('/keys/<string:key_id>', methods=["DELETE"])
 def private_keys_delete(key_id):
-    key_exists = has_private_key(key_id)
+    key_exists = private_key_exists(key_id)
     if not key_exists:
         return jsonify({'error': 'key_id does not exist'}), 404
 

@@ -1,4 +1,5 @@
 import os
+import shutil
 from typing import Union
 
 from docker.constants import DEFAULT_TIMEOUT_SECONDS
@@ -148,14 +149,22 @@ class StacksManager:
 
 
     @classmethod
-    def destroy(cls, name, shutil=None, **kwargs) -> bytes:
+    def destroy(cls, name, **kwargs) -> bytes:
         if name not in cls.stacks:
             raise ValueError(f"Stack {name} not found")
         stack = cls.stacks[name]
         out = b""
-        out += stack.down()
+
+        # Bring the stack down first
+        try:
+            out += stack.down()
+        except Exception as e:
+            out += bytes(f"\n\nError bringing stack down: {e}", 'utf-8')
+
+        # Destroy the stack resources (implementation specific)
         out += stack.destroy()
 
+        # Remove the stack file and directory from the local filesystem
         if os.path.exists(stack.project_dir):
             # Run docker compose down
             kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
@@ -170,6 +179,7 @@ class StacksManager:
             os.remove(stack.project_file)
             out += bytes(f"\n\nDeleted project file {stack.project_file}", 'utf-8')
 
+        # Remove the stack from the manager
         del cls.stacks[name]
         return out
 

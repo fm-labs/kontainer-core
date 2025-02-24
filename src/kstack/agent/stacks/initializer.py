@@ -37,7 +37,7 @@ def _init_docker_compose_stack(stack_name: str, meta=None, exists_ok=False, make
     meta["repository"] = meta.get("repository", dict())
     meta["_created"] = int(time.time())
 
-    stack = DockerComposeStack(stack_name, meta=meta)
+    stack = DockerComposeStack(stack_name, meta=meta, managed=True)
 
     # check/create the stack directory
     if make_dirs:

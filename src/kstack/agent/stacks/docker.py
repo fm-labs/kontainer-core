@@ -172,7 +172,7 @@ class DockerComposeStack(ContainerStack):
         #print(f"COMPOSE DESTROY {self.name} in {self.project_dir}")
         # No docker-specific destroy actions needed.
         # Just remove the project directory and the project file using the stack manager.
-        pass
+        return b"COMPOSE DESTROY: No docker-specific destroy actions executed."
 
 
     def ps(self, **kwargs) -> bytes:

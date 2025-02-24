@@ -21,15 +21,18 @@ def find_private_keys():
     return private_keys
 
 
-def has_private_key(name: str) -> bool:
+def private_key_exists(name: str) -> bool | str:
     """
     Checks if a private key exists.
 
     :param name: Name of the private key
-    :return: True if the private key exists, False otherwise
+    :return: Path to the private key file if it exists, False otherwise
     """
     key_file = os.path.join(KEYS_DIR, f"{name}{KEYS_FILE_SUFFIX}")
-    return os.path.exists(key_file)
+    if os.path.exists(key_file):
+        return key_file
+
+    return False
 
 
 def read_private_key(name: str) -> str:
@@ -57,7 +60,8 @@ def write_private_key(name: str, content: str) -> str:
     key_file = os.path.join(KEYS_DIR, f"{name}{KEYS_FILE_SUFFIX}")
 
     with open(key_file, 'w') as f:
-        f.write(content)
+        f.write(content.strip())
+        f.write('\n') # ensure a newline at EOF
 
     # set proper permissions on the key file
     os.chmod(key_file, 0o600)

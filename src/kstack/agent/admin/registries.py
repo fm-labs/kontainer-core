@@ -23,8 +23,8 @@ def list_container_registries(safe=True) -> list:
             "name": registry["name"],
             "host": registry["host"] if "host" in registry else "",
             "label": registry["label"] if "label" in registry else "",
-            "username": f"*****" if "username" in registry else "",
-            "password": f"*****" if "password" in registry else "",
+            "username": f"*****" if "username" in registry and len(registry['username']) > 0 else "",
+            "password": f"*****" if "password" in registry and len(registry['password']) > 0 else "",
         }
     if safe:
         return list(map(_strip_credentials, registries))
