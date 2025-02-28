@@ -48,8 +48,8 @@ COPY ./celery_worker.sh /app/celery_worker.sh
 
 # Configure Nginx
 COPY ./docker/nginx/conf.d/ /etc/nginx/conf.d/
-COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY docker/nginx/site.default.conf /etc/nginx/sites-available/default
+COPY ./docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ./docker/nginx/site.default.conf /etc/nginx/sites-available/default
 
 # Configure Supervisor
 COPY ./docker/supervisor/celery_worker.conf /etc/supervisor/conf.d/celery_worker.conf
@@ -67,3 +67,4 @@ HEALTHCHECK --interval=60s --timeout=3s --retries=3 \
 
 EXPOSE ${AGENT_PORT}
 EXPOSE 80
+EXPOSE 443
