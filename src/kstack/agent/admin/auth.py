@@ -10,6 +10,8 @@ def init_admin_credentials_file(initial_user="admin", initial_password="admin"):
     with open(admin_credentials_file, 'w') as f:
         f.write(f"{initial_user}:{initial_password}\n")
 
+    print("Wrote initial admin credentials to file", admin_credentials_file)
+
 
 def parse_admin_credentials_file():
     admin_credentials_file = os.path.join(settings.AGENT_DATA_DIR, "admin_credentials")
