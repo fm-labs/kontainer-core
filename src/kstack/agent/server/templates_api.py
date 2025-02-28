@@ -15,7 +15,11 @@ def list_templates():
     """
     Returns a list of available templates.
     """
-    template_ids = find_templates()
+    try:
+        template_ids = find_templates()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
     templates = [{
         'template_id': template_id,
         'label': template_id,
@@ -45,12 +49,18 @@ def add_template():
         return jsonify({'error': 'content and url are mutually exclusive'}), 400
 
     if template_content is not None:
-        write_template(template_id, template_content)
-        return jsonify({'template_id': template_id, 'status': 'created'}), 201
+        try:
+            write_template(template_id, template_content)
+            return jsonify({'template_id': template_id, 'status': 'created'}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
     if template_url is not None:
-        download_template(template_id, template_url)
-        return jsonify({'template_id': template_id, 'status': 'created'}), 201
+        try:
+            download_template(template_id, template_url)
+            return jsonify({'template_id': template_id, 'status': 'created'}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
 
 @templates_api_bp.route('/<string:template_id>', methods=["GET"])
@@ -80,8 +90,11 @@ def update_template(template_id):
     Updates an existing template.
     Does the same as 'add_template' but checks if the template exists first.
     """
-    template_contents = load_template(template_id)
-    if template_contents is None:
-        return jsonify({'error': 'Template not found'}), 404
+    try:
+        template_contents = load_template(template_id)
+        if template_contents is None:
+            return jsonify({'error': 'Template not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-    add_template()
+    return add_template()

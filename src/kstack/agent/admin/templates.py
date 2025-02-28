@@ -17,7 +17,7 @@ def find_templates() -> list:
     :return: List of template names
     """
     templates = []
-
+    os.makedirs(TEMPLATES_DIR, exist_ok=True)
     for entry in scandir(TEMPLATES_DIR):
         if entry.is_file() and entry.name.endswith(TEMPLATES_FILE_SUFFIX):
             templates.append(entry.name.replace(TEMPLATES_FILE_SUFFIX, ''))
@@ -39,6 +39,7 @@ def write_template(name: str, content: str) -> str:
     #if os.path.exists(template_file):
     #    raise FileExistsError(f"Template {name} already exists")
 
+    os.makedirs(TEMPLATES_DIR, exist_ok=True)
     with open(template_file, 'w') as f:
         f.write(content)
 
