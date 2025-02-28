@@ -1,5 +1,6 @@
 import flask
 from flask import jsonify
+from flask_jwt_extended.view_decorators import jwt_required
 
 from kstack.agent.docker.dkr import dkr
 
@@ -7,6 +8,7 @@ volumes_api_bp = flask.Blueprint('volumes_api', __name__, url_prefix='/api/volum
 
 
 @volumes_api_bp.route('', methods=["GET"])
+@jwt_required()
 def list_volumes():
     """
     List all volumes

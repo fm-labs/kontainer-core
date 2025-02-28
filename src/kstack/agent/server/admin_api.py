@@ -2,6 +2,7 @@ import re
 
 import flask.app
 from flask import jsonify, request
+from flask_jwt_extended.view_decorators import jwt_required
 
 from kstack.agent.admin.credentials import private_key_exists, write_private_key, delete_private_key, find_private_keys
 from kstack.agent.admin.registries import update_container_registry, delete_container_registry, \
@@ -11,12 +12,14 @@ admin_api_bp = flask.Blueprint('admin_api', __name__, url_prefix='/api/admin')
 
 
 @admin_api_bp.route('/registries', methods=["GET"])
+@jwt_required()
 def container_registries_index():
     registries = list_container_registries(safe=True)
     return jsonify(registries)
 
 
 @admin_api_bp.route('/registries/<string:registry_name>', methods=["POST"])
+@jwt_required()
 def container_registries_update(registry_name):
     data = request.get_json()
     registry_host = data.get('host', '').strip()
@@ -34,18 +37,21 @@ def container_registries_update(registry_name):
 
 
 @admin_api_bp.route('/registries/<string:registry_name>', methods=["DELETE"])
+@jwt_required()
 def container_registries_delete(registry_name):
     delete_container_registry(registry_name)
     return jsonify({'name': registry_name, 'status': 'deleted'}), 200
 
 
 @admin_api_bp.route('/keys', methods=["GET"])
+@jwt_required()
 def private_keys_index():
     private_key_ids = find_private_keys()
     return jsonify(private_key_ids)
 
 
 @admin_api_bp.route('/keys', methods=["POST"])
+@jwt_required()
 def private_keys_create_or_update():
     data = request.get_json()
 
@@ -75,6 +81,7 @@ def private_keys_create_or_update():
 
 
 @admin_api_bp.route('/keys/<string:key_id>', methods=["DELETE"])
+@jwt_required()
 def private_keys_delete(key_id):
     key_exists = private_key_exists(key_id)
     if not key_exists:

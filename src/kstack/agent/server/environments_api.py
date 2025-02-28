@@ -1,5 +1,6 @@
 import flask
 from flask import jsonify
+from flask_jwt_extended.view_decorators import jwt_required
 
 from kstack.agent.environments.envmanager import EnvManager
 
@@ -8,6 +9,7 @@ environments_api_bp = flask.Blueprint('environments_api', __name__, url_prefix='
 EnvManager.enumerate_environments()
 
 @environments_api_bp.route('', methods=["GET"])
+@jwt_required()
 def list_environments():
     """
     List all environments
@@ -27,6 +29,7 @@ def list_environments():
 
 
 @environments_api_bp.route('', methods=["POST"])
+@jwt_required()
 def create_environment():
     """
     Add an env to the db
@@ -42,6 +45,7 @@ def create_environment():
 
 
 @environments_api_bp.route('/host/<string:alias>', methods=["GET"])
+@jwt_required()
 def describe_environment(alias: str):
     """
     Get an env from the db
@@ -56,6 +60,7 @@ def describe_environment(alias: str):
 
 
 @environments_api_bp.route('/host/<string:alias>', methods=["DELETE"])
+@jwt_required()
 def remove_environment(alias: str):
     """
     Remove an env from the db

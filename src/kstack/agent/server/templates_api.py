@@ -2,6 +2,7 @@ import json
 
 import flask
 from flask import jsonify, request, url_for
+from flask_jwt_extended.view_decorators import jwt_required
 
 from kstack.agent.admin.templates import find_templates, write_template, download_template, load_template
 
@@ -9,6 +10,7 @@ templates_api_bp = flask.Blueprint('templates_api', __name__, url_prefix='/api/t
 
 
 @templates_api_bp.route('', methods=["GET"])
+@jwt_required()
 def list_templates():
     """
     Returns a list of available templates.
@@ -23,6 +25,7 @@ def list_templates():
 
 
 @templates_api_bp.route('', methods=["POST"])
+@jwt_required()
 def add_template():
     """
     Adds a new template.
@@ -51,6 +54,7 @@ def add_template():
 
 
 @templates_api_bp.route('/<string:template_id>', methods=["GET"])
+@jwt_required()
 def get_template(template_id):
     """
     Returns the contents of a specific template.
@@ -70,6 +74,7 @@ def get_template(template_id):
 
 
 @templates_api_bp.route('/<string:template_id>', methods=["POST"])
+@jwt_required()
 def update_template(template_id):
     """
     Updates an existing template.

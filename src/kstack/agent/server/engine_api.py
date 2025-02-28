@@ -4,6 +4,7 @@ import time
 
 from docker.types import CancellableStream
 from flask import jsonify, request, Blueprint
+from flask_jwt_extended.view_decorators import jwt_required
 
 from kstack.agent.docker.dkr import dkr
 
@@ -11,6 +12,7 @@ engine_api_bp = Blueprint('engine_api', __name__, url_prefix='/api/engine')
 
 
 @engine_api_bp.route('/info', methods=["GET"])
+@jwt_required()
 def engine_info():
     """
     Get Engine Info
@@ -23,6 +25,7 @@ def engine_info():
 
 
 @engine_api_bp.route('/version', methods=["GET"])
+#@jwt_required()
 def engine_version():
     """
     Get Engine Version
@@ -34,6 +37,7 @@ def engine_version():
 
 
 @engine_api_bp.route('/ping', methods=["GET"])
+#@jwt_required()
 def engine_ping():
     """
     Get Engine Ping
@@ -45,9 +49,10 @@ def engine_ping():
 
 
 @engine_api_bp.route('/df', methods=["GET"])
+@jwt_required()
 def engine_df():
     """
-    Get Engine Disk Usage
+    Get Resource Usage Summary
 
     :return: dict
     """
@@ -56,6 +61,7 @@ def engine_df():
 
 
 @engine_api_bp.route('/events', methods=["GET"])
+@jwt_required()
 def engine_events():
     """
     Get Engine Events.

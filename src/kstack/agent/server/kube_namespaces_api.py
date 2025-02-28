@@ -1,5 +1,5 @@
-from flask import jsonify
-from flask.sansio.blueprints import Blueprint
+from flask import jsonify, Blueprint
+from flask_jwt_extended.view_decorators import jwt_required
 
 from kstack.agent.kube.client import get_kube_client
 
@@ -7,6 +7,7 @@ kube_namespaces_api_bp = Blueprint('kube_namespaces_api', __name__, url_prefix='
 
 
 @kube_namespaces_api_bp.route('/namespaces', methods=["GET"])
+@jwt_required()
 def list_namespaces():
     """
     List all namespaces

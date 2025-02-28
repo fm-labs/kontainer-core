@@ -1,5 +1,6 @@
 import flask
 from flask import jsonify, request
+from flask_jwt_extended.view_decorators import jwt_required
 
 from .. import settings
 from kstack.agent.docker.dkr import dkr
@@ -10,6 +11,7 @@ container_api_bp = flask.Blueprint('container_api', __name__, url_prefix='/api/c
 
 
 @container_api_bp.route('', methods=["GET"])
+@jwt_required()
 def list_containers():
     containers = dkr.list_containers()
     #mapped = list(map(lambda x: x.attrs, containers))
@@ -22,11 +24,13 @@ def list_containers():
 
 
 @container_api_bp.route('/<string:key>', methods=["GET"])
+@jwt_required()
 def describe_container(key):
     return jsonify(dkr.get_container(key).attrs)
 
 
 @container_api_bp.route('/<string:key>/start', methods=["POST"])
+@jwt_required()
 def start_container(key):
     try:
         if request.args.get('async', None) == "1":
@@ -40,6 +44,7 @@ def start_container(key):
 
 
 @container_api_bp.route('/<string:key>/pause', methods=["POST"])
+@jwt_required()
 def pause_container(key):
     try:
         if request.args.get('async', None) == "1":
@@ -53,6 +58,7 @@ def pause_container(key):
 
 
 @container_api_bp.route('/<string:key>/stop', methods=["POST"])
+@jwt_required()
 def stop_container(key):
     try:
         if request.args.get('async', None) == "1":
@@ -66,6 +72,7 @@ def stop_container(key):
 
 
 @container_api_bp.route('/<string:key>/remove', methods=["POST"])
+@jwt_required()
 def remove_container(key):
     if not settings.AGENT_ENABLE_DELETE:
         return jsonify({"error": "Delete is disabled"}), 403
@@ -82,6 +89,7 @@ def remove_container(key):
 
 
 @container_api_bp.route('/<string:key>/restart', methods=["POST"])
+@jwt_required()
 def restart_container(key):
     try:
         if request.args.get('async', None) == "1":
@@ -95,6 +103,7 @@ def restart_container(key):
 
 
 @container_api_bp.route('/<string:key>/logs', methods=["GET"])
+@jwt_required()
 def get_container_logs(key):
     try:
         logs = dkr.get_container_logs(key)
@@ -104,6 +113,7 @@ def get_container_logs(key):
 
 
 @container_api_bp.route('/<string:key>/exec', methods=["POST"])
+@jwt_required()
 def exec_container_command(key):
     command = request.json["command"]
     try:
@@ -114,6 +124,7 @@ def exec_container_command(key):
 
 
 @container_api_bp.route('/create', methods=["POST"])
+@jwt_required()
 def create_container():
     run_data = request.json
     image = run_data["image"]
@@ -124,6 +135,7 @@ def create_container():
     return jsonify(container.attrs)
 
 @container_api_bp.route('/run', methods=["POST"])
+@jwt_required()
 def run_container():
     run_data = request.json
     image = run_data["image"]

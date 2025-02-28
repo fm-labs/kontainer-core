@@ -1,5 +1,6 @@
 import flask
 from flask import jsonify, request
+from flask_jwt_extended.view_decorators import jwt_required
 
 from kstack.agent.celery import celery
 from kstack.agent.admin.tasks import long_running_task, resolve_task
@@ -14,6 +15,7 @@ tasks_api_bp = flask.Blueprint('tasks_api', __name__, url_prefix='/api/tasks')
 
 
 @tasks_api_bp.route('', methods=['POST'])
+@jwt_required()
 def submit_task():
     """Accepts a task submission request and returns a task ID."""
     data = request.get_json()
@@ -31,6 +33,7 @@ def submit_task():
 
 
 @tasks_api_bp.route('/<string:task_id>/status', methods=['GET'])
+@jwt_required()
 def get_task_status(task_id):
     """Fetches the status of a submitted task."""
 

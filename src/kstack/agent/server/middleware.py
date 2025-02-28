@@ -1,8 +1,14 @@
 import hashlib
 
 from flask import request, jsonify
+from flask_jwt_extended import verify_jwt_in_request
 
+# Middleware to check API key presence
 def auth_token_middleware(app):
+
+    def __init__(self):
+        if app.config['API_KEY'] is None:
+            raise Exception("API_KEY is not set in the app configuration")
 
     @app.before_request
     def before_request():
@@ -35,8 +41,24 @@ def auth_token_middleware(app):
         # hasher.update(app.config['SECRET_KEY'].encode())
         # return hasher.hexdigest()
 
-        required_value = app.config['AUTH_TOKEN']
+        required_value = app.config['API_KEY']
         if api_key != required_value:
             return False
 
         return True
+
+
+# Middleware to check JWT presence
+def check_jwt_middleware(app):
+
+    @app.before_request
+    def before_request():
+        # Bypass JWT check for login route
+        if request.endpoint == "login":
+            return
+
+        try:
+            # Attempt to verify the JWT
+            verify_jwt_in_request()
+        except Exception as e:
+            return jsonify({"error": "Missing or invalid token", "message": str(e)}), 401

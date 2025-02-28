@@ -2,6 +2,7 @@ from flask import jsonify
 
 from kstack.agent.app import app
 from .server.admin_api import admin_api_bp
+from .server.auth_api import auth_api_bp
 
 from .server.engine_api import engine_api_bp
 from .server.container_api import container_api_bp
@@ -26,6 +27,9 @@ def index():
         "status": "OK"
     }
     return jsonify(status_data)
+
+# Authentication
+app.register_blueprint(auth_api_bp)
 
 # Admin API
 app.register_blueprint(environments_api_bp)

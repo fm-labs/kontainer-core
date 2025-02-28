@@ -1,5 +1,6 @@
 import flask
 from flask import jsonify, request
+from flask_jwt_extended.view_decorators import jwt_required
 
 from ..docker.manager import DockerManager
 from ..stacks.docker import DockerComposeStack
@@ -13,6 +14,7 @@ dkr = DockerManager()
 
 
 @stacks_api_bp.route('', methods=["GET"])
+@jwt_required()
 def list_stacks():
     # time_start = time.time()
     StacksManager.enumerate()
@@ -53,6 +55,7 @@ def list_stacks():
 
 
 @stacks_api_bp.route('/<string:name>/start', methods=["POST"])
+@jwt_required()
 def start_stack(name):
     if request.args.get('sync', None) == "1":
         result = stack_start_task(name)
@@ -63,6 +66,7 @@ def start_stack(name):
 
 
 @stacks_api_bp.route('/<string:name>/stop', methods=["POST"])
+@jwt_required()
 def stop_stack(name):
     # return jsonify(StacksManager.stop(name).serialize())
     if request.args.get('sync', None) == "1":
@@ -74,6 +78,7 @@ def stop_stack(name):
 
 
 @stacks_api_bp.route('/<string:name>/delete', methods=["POST"])
+@jwt_required()
 def delete_stack(name):
     # return jsonify(StacksManager.remove(name).serialize())
     if request.args.get('sync', None) == "1":
@@ -85,6 +90,7 @@ def delete_stack(name):
 
 
 @stacks_api_bp.route('/<string:name>/destroy', methods=["POST"])
+@jwt_required()
 def destroy_stack(name):
     # return jsonify(StacksManager.remove(name).serialize())
     if request.args.get('sync', None) == "1":
@@ -96,6 +102,7 @@ def destroy_stack(name):
 
 
 @stacks_api_bp.route('/<string:name>/sync', methods=["POST"])
+@jwt_required()
 def sync_stack(name):
     if request.args.get('sync', None) == "1":
         result = stack_sync_task(name)
@@ -106,11 +113,13 @@ def sync_stack(name):
 
 
 @stacks_api_bp.route('/<string:name>', methods=["GET"])
+@jwt_required()
 def describe_stack(name):
     return jsonify(StacksManager.get(name).serialize())
 
 
 @stacks_api_bp.route('/<string:name>/restart', methods=["POST"])
+@jwt_required()
 def restart_stack(name):
     # return jsonify(StacksManager.restart(name).serialize())
     if request.args.get('sync', None) == "1":
@@ -122,6 +131,7 @@ def restart_stack(name):
 
 
 @stacks_api_bp.route('/create', methods=["POST"])
+@jwt_required()
 def create_stack():
     request_json = flask.request.json
 
