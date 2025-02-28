@@ -26,6 +26,23 @@ def git_clone(repo: str, dest: str, **kwargs) -> bytes:
     return git(["clone", repo, dest], **kwargs)
 
 
+def git_pull_head(working_dir=None, **kwargs) -> bytes:
+    """
+    Pull the latest changes from the remote repository
+
+    :param working_dir: Working directory
+    :param kwargs: Additional arguments to pass to git pull
+    :return:
+    """
+    cur_head = git(["rev-parse", "--abbrev-ref", "HEAD"], working_dir=working_dir, timeout=10)
+    cur_head_str = cur_head.decode("utf-8").strip()
+    print(f"Current HEAD: {cur_head_str}")
+    if cur_head_str is None or cur_head_str == "":
+        raise ValueError("Failed to get current HEAD")
+
+    return git(["pull", "origin", cur_head_str], working_dir=working_dir, **kwargs)
+
+
 def git_update(working_dir=None, force=False, reset=False, **kwargs) -> bytes:
     """
     Update a git repository.
@@ -65,7 +82,7 @@ def git_update(working_dir=None, force=False, reset=False, **kwargs) -> bytes:
     return git(["pull"], working_dir=working_dir, **kwargs)
 
 
-def git(cmd: list, working_dir=None, ssh_private_key=None, **kwargs) -> bytes:
+def git(cmd: list, working_dir=None, private_key_file=None, timeout=None, **kwargs) -> bytes:
     """
     Run a docker git command
 
@@ -78,10 +95,10 @@ def git(cmd: list, working_dir=None, ssh_private_key=None, **kwargs) -> bytes:
 
     # ssh command
     ssh_command = f"ssh -o IdentitiesOnly=yes"
-    if ssh_private_key:
-        if not os.path.exists(ssh_private_key):
-            raise ValueError(f"Private key file {ssh_private_key} does not exist")
-        ssh_command += f" -i {ssh_private_key}"
+    if private_key_file:
+        if not os.path.exists(private_key_file):
+            raise ValueError(f"Private key file {private_key_file} does not exist")
+        ssh_command += f" -i {private_key_file}"
 
     # git specific args
     git_args = {}
@@ -114,7 +131,11 @@ def git(cmd: list, working_dir=None, ssh_private_key=None, **kwargs) -> bytes:
 
         print(f"Environment: {penv}")
 
-        proc = subprocess.run(pcmd, cwd=working_dir, env=penv, capture_output=True)
+        proc = subprocess.run(pcmd,
+                              cwd=working_dir,
+                              env=penv,
+                              capture_output=True,
+                              timeout=timeout)
         print("STDOUT", proc.stdout)
         print("STDERR", proc.stderr)
 

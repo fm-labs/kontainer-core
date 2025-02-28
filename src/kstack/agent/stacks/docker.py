@@ -8,6 +8,9 @@ from docker.constants import DEFAULT_TIMEOUT_SECONDS
 from kstack.agent.stacks import ContainerStack
 from kstack.agent.util.subprocess_util import kwargs_to_cmdargs, load_envfile
 
+
+
+
 class DockerComposeStack(ContainerStack):
     def __init__(self, name, managed=False, meta=None, **kwargs):
         super().__init__(name, managed=managed, meta=meta)
@@ -208,3 +211,9 @@ class DockerComposeStack(ContainerStack):
     # @classmethod
     # def from_json(cls, data):
     #     return cls(data['name'], data['attrs'])
+
+
+
+class UnmanagedDockerComposeStack(DockerComposeStack):
+    def __init__(self, name, meta=None, **kwargs):
+        super().__init__(name, managed=False, meta=meta)

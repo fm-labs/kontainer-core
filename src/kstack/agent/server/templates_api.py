@@ -1,3 +1,5 @@
+import json
+
 import flask
 from flask import jsonify, request, url_for
 
@@ -53,7 +55,13 @@ def get_template(template_id):
     """
     Returns the contents of a specific template.
     """
-    template_contents = load_template(template_id)
+    try:
+        template_contents = load_template(template_id)
+    except json.decoder.JSONDecodeError:
+        return jsonify({'error': 'Template is not a valid JSON'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
     if template_contents is None:
         return jsonify({'error': 'Template not found'}), 404
 

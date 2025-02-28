@@ -2,7 +2,7 @@ import os
 
 from kstack.agent.admin.credentials import private_key_exists
 from kstack.agent.stacks import ContainerStack
-from kstack.agent.util.git_util import git_clone, git_update
+from kstack.agent.util.git_util import git_clone, git_update, git_pull_head
 
 
 def sync_stack(stack: ContainerStack) -> bytes:
@@ -22,45 +22,49 @@ def sync_stack(stack: ContainerStack) -> bytes:
 
     return b""
 
+
 def _get_ssh_key_for_repo(repo: dict):
     is_private = repo.get("private", False)
     if not is_private:
         return None
 
-    ssh_private_key = repo.get("ssh_private_key", '')
-    ssh_private_key_id = repo.get("ssh_private_key_id", '')
+    private_key_file = repo.get("private_key_file", '')
+    private_key_id = repo.get("private_key_id", '')
 
-    if ssh_private_key is None or ssh_private_key == '':
-        if ssh_private_key_id is None or ssh_private_key_id == '':
+    if private_key_file is None or private_key_file == '':
+        if private_key_id is None or private_key_id == '':
             raise ValueError("Private repository requires an SSH private key")
 
         # triple check the key exists
-        _key_file = private_key_exists(ssh_private_key_id)
+        _key_file = private_key_exists(private_key_id)
         if (_key_file is None
                 or _key_file is False
                 or _key_file == ''
                 or not os.path.exists(_key_file)):
-            raise ValueError(f"SSH private key {ssh_private_key_id} not found")
-        ssh_private_key = _key_file
+            raise ValueError(f"SSH private key {private_key_id} not found")
+        private_key_file = _key_file
 
-    return ssh_private_key
+    return private_key_file
+
 
 def _sync_repo(stack: ContainerStack, repo: dict):
-
     repo_url = repo.get("url", "")
+    repo_branch = repo.get("branch", "main")
     if repo_url is None or repo_url == "":
         raise ValueError("Repository URL not provided")
 
-    ssh_private_key = _get_ssh_key_for_repo(repo)
+    private_key_file = _get_ssh_key_for_repo(repo)
 
     project_dir = stack.project_dir
-    if os.path.exists(project_dir):
+    project_git_dir = os.path.join(project_dir, ".git")
+    if os.path.exists(project_dir) and os.path.exists(project_git_dir):
         # Pull the latest changes
         try:
-            output = git_update(project_dir,
+            output = git_pull_head(project_dir,
                                 force=True,
                                 # reset=True,
-                                ssh_private_key=ssh_private_key)
+                                private_key_file=private_key_file,
+                                timeout=120)
             print(output)
             print(f"Updated git repo at {stack.project_dir}")
         except Exception as e:
@@ -72,7 +76,10 @@ def _sync_repo(stack: ContainerStack, repo: dict):
             # git.Repo.clone_from(repo_url, stack.project_dir)
             output = git_clone(repo_url,
                                project_dir,
-                               ssh_private_key=ssh_private_key)
+                               private_key_file=private_key_file,
+                               single_branch=True,
+                               branch=repo_branch,
+                               timeout=120)
             print(output)
             print(f"Cloned git repo to {stack.project_dir}")
         except Exception as e:

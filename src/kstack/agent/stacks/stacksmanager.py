@@ -7,7 +7,7 @@ from docker.constants import DEFAULT_TIMEOUT_SECONDS
 from . import ContainerStack
 from .initializer import stack_from_portainer_template, stack_from_gitrepo, \
     stack_from_compose_url, stack_from_scratch, stack_from_template_repo, stack_from_template
-from .docker import DockerComposeStack
+from .docker import DockerComposeStack, UnmanagedDockerComposeStack
 from .sync import sync_stack
 from ..settings import AGENT_DATA_DIR
 
@@ -112,7 +112,6 @@ class StacksManager:
         stack = cls.stacks[name]
         return stack
 
-
     @classmethod
     def remove(cls, name) -> None:
         if name not in cls.stacks:
@@ -122,29 +121,48 @@ class StacksManager:
         return stack
 
 
+    @classmethod
+    def _get_or_unmanaged(cls, name):
+        stack = cls.get(name)
+        if stack is None:
+            stack = UnmanagedDockerComposeStack(name)
+        return stack
+
     # STACK OPERATIONS
 
     @classmethod
     def start(cls, name) -> bytes:
-        if name not in cls.stacks:
-            raise ValueError(f"Stack {name} not found")
-        stack = cls.stacks[name]
+        # if name not in cls.stacks:
+        #     raise ValueError(f"Stack {name} not found")
+        # stack = cls.stacks[name]
+        stack = cls._get_or_unmanaged(name)
         return stack.up()
 
 
     @classmethod
+    def restart(cls, name) -> bytes:
+        # if name not in cls.stacks:
+        #     raise ValueError(f"Stack {name} not found")
+        # stack = cls.stacks[name]
+        stack = cls._get_or_unmanaged(name)
+        return stack.restart()
+
+
+    @classmethod
     def stop(cls, name) -> bytes:
-        if name not in cls.stacks:
-            raise ValueError(f"Stack {name} not found")
-        stack = cls.stacks[name]
+        # if name not in cls.stacks:
+        #     raise ValueError(f"Stack {name} not found")
+        # stack = cls.stacks[name]
+        stack = cls._get_or_unmanaged(name)
         return stack.stop()
 
 
     @classmethod
     def delete(cls, name) -> bytes:
-        if name not in cls.stacks:
-            raise ValueError(f"Stack {name} not found")
-        stack = cls.stacks[name]
+        # if name not in cls.stacks:
+        #     raise ValueError(f"Stack {name} not found")
+        # stack = cls.stacks[name]
+        stack = cls._get_or_unmanaged(name)
         return stack.down()
 
 
@@ -182,14 +200,6 @@ class StacksManager:
         # Remove the stack from the manager
         del cls.stacks[name]
         return out
-
-
-    @classmethod
-    def restart(cls, name) -> bytes:
-        if name not in cls.stacks:
-            raise ValueError(f"Stack {name} not found")
-        stack = cls.stacks[name]
-        return stack.restart()
 
 
     @classmethod

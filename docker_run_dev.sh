@@ -6,7 +6,7 @@ DEV_IMAGE_TAG=kstack-agent:dev
 docker stop ${DEV_CONTAINER_NAME}
 docker rm ${DEV_CONTAINER_NAME}
 
-docker build -t ${DEV_IMAGE_TAG} .
+docker build -t ${DEV_IMAGE_TAG} . && \
 
 docker run \
   --rm \

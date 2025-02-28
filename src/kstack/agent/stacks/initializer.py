@@ -119,8 +119,8 @@ def stack_from_gitrepo(stack_name, **kwargs):
     # repo_tag = kwargs.get("repo_tag", None)
 
     private = kwargs.get("private", False)
-    ssh_private_key = kwargs.get("ssh_private_key", None)
-    ssh_private_key_id = kwargs.get("ssh_private_key_id", None)
+    private_key_file = kwargs.get("private_key_file", None)
+    private_key_id = kwargs.get("private_key_id", None)
 
     # Ensure a repo_url is set
     if repo_url is None:
@@ -132,20 +132,20 @@ def stack_from_gitrepo(stack_name, **kwargs):
         "ref": repo_ref,
     }
 
-    # Ensure an ssh_private_key is set for private repos
-    # If private is set to True, then ssh_private_key must be set
+    # Ensure an private_key_file is set for private repos
+    # If private is set to True, then private_key_file must be set
     # The existence of the private key file is NOT checked here
     if private:
-        if ssh_private_key is None:
-            if ssh_private_key_id is None:
+        if private_key_file is None:
+            if private_key_id is None:
                 raise ValueError("Private repository requires an SSH private key")
 
-            ssh_private_key = f"{KEYS_DIR}/{ssh_private_key_id}"
+            private_key_file = f"{KEYS_DIR}/{private_key_id}"
 
         repo["private"] = True
-        repo["ssh_private_key"] = ssh_private_key
+        repo["private_key_file"] = private_key_file
     else:
-        ssh_private_key = None
+        private_key_file = None
 
     meta = {
         "base_path": base_path,
@@ -159,7 +159,7 @@ def stack_from_gitrepo(stack_name, **kwargs):
         # git.Repo.clone_from(repo_url, stack.project_dir)
         output = git_clone(repo_url,
                            target_dir,
-                           ssh_private_key=ssh_private_key)
+                           private_key_file=private_key_file)
         print(output)
         print(f"Stacked cloned to {stack.project_dir}")
     except Exception as e:
@@ -179,10 +179,10 @@ def stack_from_template_repo(stack_name, repo_url=None, template_name=None, para
         # todo update repo or delete and clone
         raise ValueError(f"Repository directory {repo_base_dir} already exists")
 
-    ssh_private_key = kwargs.get("ssh_private_key", None)
+    private_key_file = kwargs.get("private_key_file", None)
     output = git_clone(repo_url,
                        repo_base_dir,
-                       ssh_private_key=ssh_private_key)
+                       private_key_file=private_key_file)
     print(output)
     print(f"Repository cloned to {repo_base_dir}")
 
