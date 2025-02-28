@@ -17,6 +17,7 @@ docker run \
   -v $PWD/data:/app/data \
   -p 5000:5000 \
   -p 5080:80 \
+  -p 5443:443 \
   -e AGENT_HOST=0.0.0.0 \
   -e AGENT_PORT=5000 \
   -e AGENT_DATA_DIR=/app/data \

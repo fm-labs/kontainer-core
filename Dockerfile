@@ -13,7 +13,8 @@ RUN apt-get update && \
     ca-certificates \
     nginx \
     redis-server \
-    supervisor
+    supervisor \
+    openssl
 
 # Add Docker's official GPG key:
 RUN install -m 0755 -d /etc/apt/keyrings \
@@ -46,7 +47,9 @@ COPY ./agent.py /app/agent.py
 COPY ./celery_worker.sh /app/celery_worker.sh
 
 # Configure Nginx
-COPY ./docker/nginx/default.conf /etc/nginx/sites-available/default
+COPY ./docker/nginx/conf.d/ /etc/nginx/conf.d/
+COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx/site.default.conf /etc/nginx/sites-available/default
 
 # Configure Supervisor
 COPY ./docker/supervisor/celery_worker.conf /etc/supervisor/conf.d/celery_worker.conf
