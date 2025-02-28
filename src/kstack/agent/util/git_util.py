@@ -94,7 +94,7 @@ def git(cmd: list, working_dir=None, private_key_file=None, timeout=None, **kwar
         working_dir = os.getcwd()
 
     # ssh command
-    ssh_command = f"ssh -o IdentitiesOnly=yes"
+    ssh_command = f"ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
     if private_key_file:
         if not os.path.exists(private_key_file):
             raise ValueError(f"Private key file {private_key_file} does not exist")
