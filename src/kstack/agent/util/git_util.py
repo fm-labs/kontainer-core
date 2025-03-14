@@ -94,7 +94,7 @@ def git(cmd: list, working_dir=None, private_key_file=None, timeout=None, **kwar
         working_dir = os.getcwd()
 
     # ssh command
-    ssh_command = f"ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
+    ssh_command = f"ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
     if private_key_file:
         if not os.path.exists(private_key_file):
             raise ValueError(f"Private key file {private_key_file} does not exist")
@@ -111,6 +111,7 @@ def git(cmd: list, working_dir=None, private_key_file=None, timeout=None, **kwar
         print(f"RAW CMD: {pcmd}")
         print(f"CMD: {" ".join(pcmd)}")
         print(f"PWD: {working_dir}")
+        print(f"SSH: {ssh_command}")
 
         # penv = os.environ.copy()
         penv = dict()
