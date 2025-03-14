@@ -15,7 +15,7 @@ if [[ $1 == "--release" ]]; then
   shift
 fi
 
-if ! docker build -t ${TAGNAME}:latest --progress=plain .
+if ! docker build -t ${TAGNAME}:latest --progress=plain -f ./Dockerfile-alpine .
 then
   echo "DOCKER BUILD FAILED"
   exit 1

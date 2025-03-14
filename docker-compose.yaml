@@ -4,7 +4,7 @@ services:
   agent:
     build:
       context: .
-      dockerfile: Dockerfile-dev
+      dockerfile: Dockerfile-dev-alpine
     image: kstack-agent-dev
     ports:
       - "5000:5000"

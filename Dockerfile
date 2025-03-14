@@ -52,7 +52,7 @@ COPY ./docker/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY ./docker/nginx/site.default.conf /etc/nginx/sites-available/default
 
 # Configure Supervisor
-COPY ./docker/supervisor/celery_worker.conf /etc/supervisor/conf.d/celery_worker.conf
+COPY docker/supervisor/celery_worker.ini /etc/supervisor/conf.d/celery_worker.conf
 
 # Entry point
 COPY ./docker/entrypoint.sh /entrypoint.sh

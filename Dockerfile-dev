@@ -47,7 +47,7 @@ RUN pip install poetry \
 #COPY ./README.md /app/README.md
 
 # Configure Supervisor
-COPY ./docker/supervisor/celery_worker.conf /etc/supervisor/conf.d/celery_worker.conf
+COPY docker/supervisor/celery_worker.ini /etc/supervisor/conf.d/celery_worker.conf
 
 # Entry point
 COPY ./docker/entrypoint.sh /entrypoint.sh

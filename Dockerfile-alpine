@@ -1,0 +1,48 @@
+FROM python:3.13-alpine
+
+ENV AGENT_HOST=0.0.0.0
+ENV AGENT_PORT=5000
+
+RUN apk update && apk add --no-cache \
+    curl \
+    nginx \
+    redis \
+    supervisor \
+    openssl \
+    bash
+
+WORKDIR /app
+
+# Install python dependencies
+COPY ./pyproject.toml ./poetry.lock /app/
+RUN pip install poetry \
+    && poetry config virtualenvs.create false \
+    && poetry install --only main --no-root
+
+# Copy the rest of the code
+COPY ./src /app/src
+COPY ./agent.py /app/agent.py
+COPY ./celery_worker.sh /app/celery_worker.sh
+
+# Configure Nginx
+COPY ./docker/nginx/site.default.conf /etc/nginx/http.d/default.conf
+
+# Configure Supervisor
+COPY docker/supervisor/celery_worker.ini /etc/supervisor.d/celery_worker.ini
+
+
+#ENTRYPOINT ["supervisord", "--nodaemon", "--configuration", "/etc/supervisord.conf"]
+COPY ./docker/entrypoint-alpine.sh /entrypoint.sh
+RUN ["chmod", "+x", "/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["devserver"]
+
+
+# Health check
+HEALTHCHECK --interval=60s --timeout=3s --retries=3 \
+ CMD curl --fail http://localhost:${AGENT_PORT}/ || exit 1
+
+
+EXPOSE ${AGENT_PORT}
+EXPOSE 80
+EXPOSE 443
