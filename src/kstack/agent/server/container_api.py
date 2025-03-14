@@ -13,20 +13,26 @@ container_api_bp = flask.Blueprint('container_api', __name__, url_prefix='/api/c
 @container_api_bp.route('', methods=["GET"])
 @jwt_required()
 def list_containers():
-    containers = dkr.list_containers()
-    #mapped = list(map(lambda x: x.attrs, containers))
+    try:
+        containers = dkr.list_containers()
+        #mapped = list(map(lambda x: x.attrs, containers))
 
-    mapped = list()
-    for container in containers:
-        mapped.append(container.attrs)
+        mapped = list()
+        for container in containers:
+            mapped.append(container.attrs)
 
-    return jsonify(mapped)
+        return jsonify(mapped)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @container_api_bp.route('/<string:key>', methods=["GET"])
 @jwt_required()
 def describe_container(key):
-    return jsonify(dkr.get_container(key).attrs)
+    try:
+        return jsonify(dkr.get_container(key).attrs)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @container_api_bp.route('/<string:key>/start', methods=["POST"])
@@ -131,8 +137,12 @@ def create_container():
     del run_data["image"]
     run_data["detach"] = True
 
-    container = dkr.create_container(image, **run_data)
-    return jsonify(container.attrs)
+    try:
+        container = dkr.create_container(image, **run_data)
+        return jsonify(container.attrs)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @container_api_bp.route('/run', methods=["POST"])
 @jwt_required()
@@ -142,8 +152,12 @@ def run_container():
     del run_data["image"]
     run_data["detach"] = True
 
-    container = dkr.run_container(image, **run_data)
-    return jsonify(container.attrs)
+    try:
+        container = dkr.run_container(image, **run_data)
+        return jsonify(container.attrs)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 
 # @container_api_bp.route('/containers/restart', methods=["POST"])
