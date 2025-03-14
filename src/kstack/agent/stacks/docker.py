@@ -43,17 +43,24 @@ class DockerComposeStack(ContainerStack):
         :param kwargs: Additional arguments to pass to docker compose
         :return:
         """
-        compose_args = {}
-        compose_args['project-name'] = self.name
-        #compose_args['project-directory'] = self.project_dir
-        #compose_args['file'] = 'docker-compose.yml'
-        #compose_args['progress'] = 'auto'
 
         working_dir = self.project_dir
         if self.meta:
             base_path = self.meta.get('base_path', "")
             working_dir = os.path.join(self.project_dir, base_path)
 
+
+        compose_file = 'docker-compose.yml'
+        if os.path.exists(os.path.join(working_dir, 'docker-compose.stack.yml')):
+            compose_file = 'docker-compose.stack.yml'
+        #if os.path.exists('docker-compose.override.yml'):
+        #    compose_file = 'docker-compose.override.yml'
+
+        compose_args = dict()
+        compose_args['project-name'] = self.name
+        compose_args['project-directory'] = working_dir
+        compose_args['file'] = compose_file
+        compose_args['progress'] = 'plain'
         try:
             pcmd = ((["docker", "compose"]
                     + kwargs_to_cmdargs(compose_args)) # compose specific args
@@ -65,9 +72,9 @@ class DockerComposeStack(ContainerStack):
             #penv = os.environ.copy()
             penv = dict()
             penv['PATH'] = os.getenv('PATH')
-            penv['COMPOSE_PROJECT_NAME'] = self.name
-            penv['COMPOSE_FILE'] = 'docker-compose.yml'
             penv['COMPOSE_PROJECT_DIRECTORY'] = working_dir
+            penv['COMPOSE_PROJECT_NAME'] = self.name
+            penv['COMPOSE_FILE'] = compose_file
             penv['PWD'] = working_dir
             #penv['DOCKER_HOST'] = 'unix:///var/run/docker.sock'
 
