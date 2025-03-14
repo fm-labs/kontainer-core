@@ -45,7 +45,10 @@ def get_task_status(task_id):
         print(task_id, task.state, task)
         response = dict()
         response['task_id'] = task_id
+        response['task_name'] = task.task_name if hasattr(task, 'task_name') else None
         response['status'] = task.state
+        response['root_id'] = task.root_id if hasattr(task, 'root_id') else None
+        response['parent_id'] = task.parent_id if hasattr(task, 'parent_id') else None
         if task.state == 'PROGRESS':
             response['progress'] = task.info
         elif task.state == 'SUCCESS':
