@@ -63,7 +63,7 @@ echo "ID: ${CURRENTUSERID} / ${KUSER_ID}"
 export PYTHON_UNBUFFERED=1
 export PYTHONPATH=/app/src:$PYTHONPATH
 export AGENT_DATA_DIR=${AGENT_DATA_DIR:-/app/data}
-export AGENT_HOST=${AGENT_HOST:-127.0.0.1}
+export AGENT_HOST=${AGENT_HOST:-0.0.0.0}
 export AGENT_PORT=${AGENT_PORT:-5000}
 
 # Gunicorn settings
@@ -92,7 +92,8 @@ case $1 in
     # Only allow connections from localhost
     # export AGENT_HOST=127.0.0.1
 
-    BIND=0.0.0.0:5000
+    # BIND=0.0.0.0:5000
+    BIND=${AGENT_HOST}:${AGENT_PORT}
     echo "Starting gunicorn (${BIND}) ..."
     exec gunicorn ${WSGI_APP} \
       --name ${NAME} \
