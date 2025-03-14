@@ -168,29 +168,26 @@ class StacksManager:
 
     @classmethod
     def destroy(cls, name, **kwargs) -> bytes:
-        if name not in cls.stacks:
-            raise ValueError(f"Stack {name} not found")
-        stack = cls.stacks[name]
+        #kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
         out = b""
+        stack = cls._get_or_unmanaged(name)
 
-        # Bring the stack down first
+        # Try bringing the stack down first
         try:
             out += stack.down()
         except Exception as e:
             out += bytes(f"\n\nError bringing stack down: {e}", 'utf-8')
 
         # Destroy the stack resources (implementation specific)
-        out += stack.destroy()
+        try:
+            out += stack.destroy()
+        except Exception as e:
+            out += bytes(f"\n\nError during stack destroy: {e}", 'utf-8')
 
         # Remove the stack file and directory from the local filesystem
         if os.path.exists(stack.project_dir):
-            # Run docker compose down
-            kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
-            out += stack._compose("down", **kwargs)
-
             # Remove the project directory recursively with shutil.rmtree
             shutil.rmtree(stack.project_dir)
-
             out += bytes(f"\n\nDeleted project directory {stack.project_dir}", 'utf-8')
 
         if os.path.exists(stack.project_file):
@@ -198,7 +195,9 @@ class StacksManager:
             out += bytes(f"\n\nDeleted project file {stack.project_file}", 'utf-8')
 
         # Remove the stack from the manager
-        del cls.stacks[name]
+        if name in cls.stacks:
+            del cls.stacks[name]
+
         return out
 
 

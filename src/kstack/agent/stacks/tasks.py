@@ -53,12 +53,16 @@ def stack_delete_task(self, stack_name):
     stack = StacksManager.get(stack_name)
     if stack is None:
         stack = UnmanagedDockerComposeStack(stack_name)
-    return stack.delete()
+    return stack.down()
 
 
 @celery.task(bind=True)
 def stack_destroy_task(self, stack_name):
     print(f"Stack DESTROY {stack_name}")
+    #stack = StacksManager.get(stack_name)
+    #if stack is None:
+    #    stack = UnmanagedDockerComposeStack(stack_name)
+    #return stack.destroy()
     return StacksManager.destroy(stack_name)
 
 
