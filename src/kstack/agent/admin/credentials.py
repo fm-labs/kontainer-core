@@ -59,12 +59,22 @@ def write_private_key(name: str, content: str) -> str:
     os.makedirs(KEYS_DIR, exist_ok=True)
     key_file = os.path.join(KEYS_DIR, f"{name}{KEYS_FILE_SUFFIX}")
 
-    with open(key_file, 'w') as f:
-        f.write(content.strip())
-        f.write('\n') # ensure a newline at EOF
+    original_umask = os.umask(0o022)
 
-    # set proper permissions on the key file
-    os.chmod(key_file, 0o600)
+    try:
+
+        # Set umask to restrict permissions (only owner read/write)
+        os.umask(0o177)  # This ensures new files get 0600 permissions
+
+        with open(key_file, 'w') as f:
+            f.write(content.strip())
+            f.write('\n') # ensure a newline at EOF
+
+        # set proper permissions on the key file
+        os.chmod(key_file, 0o600)
+
+    finally:
+        os.umask(original_umask)
 
     return key_file
 
