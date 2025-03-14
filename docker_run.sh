@@ -1,5 +1,8 @@
 #!/bin/bash
 
+docker stop kstack-agent
+docker rm kstack-agent
+
 docker run -d \
   --name kstack-agent \
   --restart always \
@@ -8,4 +11,4 @@ docker run -d \
   -v kstack_agent_data:/app/data \
   -p 5000:5000 \
   -e AGENT_HOST=0.0.0.0 \
-  fmlabs/kstack-agent:latest
+  kstack-agent:latest
