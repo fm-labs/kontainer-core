@@ -4,21 +4,21 @@ KUSER=kstack
 
 init_services() {
 
-  if [[ ! -f /etc/nginx/ssl/self-signed.crt ]]; then
+  if [[ ! -f /etc/ssl/self-signed.crt ]]; then
     echo "Generating self-signed certificate ..."
-    mkdir -p /etc/nginx/ssl
-    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/nginx/ssl/self-signed.key -out /etc/nginx/ssl/self-signed.crt -subj '/CN=localhost'
+    mkdir -p /etc/ssl
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/self-signed.key -out /etc/ssl/self-signed.crt -subj '/CN=localhost'
   fi
 
-  if [[ ! -f /etc/nginx/ssl/dhparam.pem ]]; then
+  if [[ ! -f /etc/ssl/dhparam.pem ]]; then
     echo "Generating dhparam.pem ..."
-    openssl dhparam -out /etc/nginx/ssl/dhparam.pem 2048
+    openssl dhparam -out /etc/ssl/dhparam.pem 2048
   fi
 
-  if [[ ! -f /etc/nginx/ssl/cert.pem ]]; then
+  if [[ ! -f /etc/ssl/cert.pem ]]; then
     echo "Using self signed cert ..."
-    ln -sf /etc/nginx/ssl/self-signed.crt /etc/nginx/ssl/cert.pem
-    ln -sf /etc/nginx/ssl/self-signed.key /etc/nginx/ssl/key.pem
+    ln -sf /etc/ssl/self-signed.crt /etc/ssl/cert.pem
+    ln -sf /etc/ssl/self-signed.key /etc/ssl/key.pem
   fi
 
   if ! service nginx start ; then
