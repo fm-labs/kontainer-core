@@ -62,7 +62,7 @@ class DockerComposeStack(ContainerStack):
         compose_args['file'] = compose_file
         compose_args['progress'] = 'plain'
         try:
-            pcmd = ((["docker", "compose"]
+            pcmd = ((["docker-compose"]
                     + kwargs_to_cmdargs(compose_args)) # compose specific args
                     + [cmd] # the compose command (up/down/...)
                     + kwargs_to_cmdargs(kwargs)) # additional command args

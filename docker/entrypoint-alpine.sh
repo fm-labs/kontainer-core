@@ -37,6 +37,14 @@ init_services() {
     echo "ERROR: Failed to test nginx configuration"
     exit 1
   fi
+
+  echo "Checking docker-compose ..."
+  DOCKER_COMPOSE_BIN=`which docker-compose`
+  DOCKER_COMPOSE_VERSION=`docker-compose --version`
+
+  echo "DOCKER_COMPOSE_BIN: ${DOCKER_COMPOSE_BIN}"
+  echo "DOCKER_COMPOSE_VERSION: ${DOCKER_COMPOSE_VERSION}"
+
   #  echo "Starting nginx ..."
   #  nginx -g "daemon off;" &
   #

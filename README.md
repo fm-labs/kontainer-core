@@ -13,27 +13,13 @@ docker pull fmlabs/kstack-agent:latest
 docker run -d \
   --name kstack-agent \
   --restart always \
-  --privileged \
-  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
   -v /var/lib/docker/volumes:/var/lib/docker/volumes:ro \
   -v kstack_agent_data:/app/data \
   -p 5000:5000 \
   fmlabs/kstack-agent:latest
 ```
 
-If the docker base directory is different from `/var/lib/docker`, change the volume mount accordingly.
-
-```bash
-docker run -d \
-  --name kstack-agent \
-  --restart always \
-  --privileged \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /var/lib/docker/volumes:/srv/docker/volumes:ro \
-  -v kstack_agent_data:/app/data \
-  -p 5000:5000 \
-  fmlabs/kstack-agent:0.4.0
-```
 
 ```bash
 # Download docker_run.sh from github repository and invoke with bash
@@ -84,12 +70,12 @@ The kstack-agent REST api server is served at `http://localhost:5000/` by defaul
     - [x] List compose stacks from container labels
     - [ ] List compose stacks from registered repositories
   - [ ] Inspect compose stack
-  - [ ] Start compose stack (compose up)
-  - [ ] Stop compose stack (compose stop)
-  - [ ] Teardown compose stack (compose down)
-  - [ ] Add compose stack
-    - [ ] Add stack from compose file
-    - [ ] Add stack from github repository
+  - [x] Start compose stack (compose up)
+  - [x] Stop compose stack (compose stop)
+  - [x] Teardown compose stack (compose down)
+  - [x] Add compose stack
+    - [x] Add stack from compose file
+    - [x] Add stack from github repository
 - [ ] Secrets
   - [ ] List secrets
   - [ ] Inspect secret
@@ -117,18 +103,18 @@ The kstack-agent REST api server is served at `http://localhost:5000/` by defaul
 
 - [ ] Blueprints
   - [ ] Container Blueprints
-    - [ ] List templates from Kstack templates (json files hosted on github)
+    - [x] List templates from Kstack templates (json files hosted on github)
     - [x] List templates from Portainer templates (json files hosted on github)
-    - [ ] Launch container from template
+    - [x] Launch container from template
     - [ ] Launch container from portainer template
 
   - [ ] Compose Blueprints
-    - [ ] List compose templates from Kstack templates (json files hosted on github)
+    - [x] List compose templates from Kstack templates (json files hosted on github)
     - [ ] List user-defined compose templates
-    - [ ] Add compose template
-      - [ ] Compose file upload
-      - [ ] Compose file url
-      - [ ] GitHub repository with compose file
+    - [x] Add compose template
+      - [x] Compose file upload
+      - [x] Compose file url
+      - [x] GitHub repository with compose file
 
 ## Useful links
 

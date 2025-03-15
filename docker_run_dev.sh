@@ -6,13 +6,12 @@ DEV_IMAGE_TAG=kstack-agent:dev
 docker stop ${DEV_CONTAINER_NAME}
 docker rm ${DEV_CONTAINER_NAME}
 
-docker build -t ${DEV_IMAGE_TAG} -f ./Dockerfile-dev-alpine . && \
+docker build -t ${DEV_IMAGE_TAG} --progress=plain -f ./Dockerfile-alpine . && \
 
 docker run \
   --rm \
   --name ${DEV_CONTAINER_NAME} \
-  --privileged \
-  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
   -v /var/lib/docker/volumes:/var/lib/docker/volumes:ro \
   -v $PWD/data:/app/data \
   -v $PWD/bin:/app/bin:ro \
