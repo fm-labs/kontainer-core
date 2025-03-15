@@ -59,7 +59,9 @@ CMD ["nginx"]
 RUN chown -R appuser:appgroup /run
 RUN chown -R appuser:appgroup /var/run
 
-RUN touch /var/log/supervisord.log && touch /run/supervisord.pid && touch /run/supervisord.sock && \
+RUN touch /var/log/supervisord.log && \
+    touch /run/supervisord.pid && \
+    touch /run/supervisord.sock && \
     mkdir -p /var/log/supervisor && \
     chown -R appuser:appgroup /etc/supervisord.conf /etc/supervisor.d /run/supervisord.pid /run/supervisord.sock && \
     chown -R appuser:appgroup /var/log/supervisord.log /var/log/supervisor
