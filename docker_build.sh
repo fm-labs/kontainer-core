@@ -22,6 +22,7 @@ then
 fi
 
 
+
 if [[ $RELEASE == "1" ]]; then
   echo "Creating release ..."
 
@@ -43,3 +44,5 @@ if [[ $RELEASE == "1" ]]; then
 
 fi
 
+
+docker scout cves ${TAGNAME}:latest
