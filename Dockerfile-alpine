@@ -81,6 +81,7 @@ ENTRYPOINT ["/entrypoint.sh"]
 CMD ["supervisor"]
 
 RUN mkdir -p /app/ssl/ && \
+    mkdir -p /app/data && \
     mkdir -p /var/lib/redis && \
     mkdir -p /var/log/supervisor && \
     mkdir -p /var/log/nginx/ && \
@@ -96,13 +97,14 @@ RUN mkdir -p /app/ssl/ && \
 RUN chown -R appuser:appgroup /run && \
     chown -R appuser:appgroup /var/run && \
     chown -R appuser:appgroup /etc/supervisord.conf /etc/supervisor.d && \
-    chown -R appuser:appgroup /var/log/supervisor && \
-    chown -R appuser:appgroup /app/ssl/ && \
+    chown -R appuser:appgroup /var/log/supervisor&& \
     chown -R appuser:appgroup /var/lib/nginx /var/lib/nginx/logs /run/nginx && \
     chown -R appuser:appgroup /var/lib/redis && \
     chown -R appuser:appgroup /var/log/redis/redis.log /run/redis/redis.pid && \
     chown -R appuser:appgroup /var/lib/docker/cli-plugins && \
-    chown -R appuser:appgroup /usr/local/bin/docker-compose
+    chown -R appuser:appgroup /usr/local/bin/docker-compose && \
+    chown -R appuser:appgroup /app/ssl/ && \
+    chown -R appuser:appgroup /app/data
 
 
 USER appuser
