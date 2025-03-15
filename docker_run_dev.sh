@@ -24,4 +24,5 @@ docker run \
   -e AGENT_HOST=0.0.0.0 \
   -e AGENT_PORT=5000 \
   -e AGENT_DATA_DIR=/app/data \
+  -e AGENT_DATA_HOME=$PWD \
   ${DEV_IMAGE_TAG} $@

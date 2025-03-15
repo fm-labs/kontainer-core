@@ -14,4 +14,6 @@ docker run -d \
   -v kstack_agent_data:/app/data \
   -p 5000:5000 \
   -e AGENT_HOST=0.0.0.0 \
+  -e AGENT_DATA_DIR=/app/data \
+  -e AGENT_DATA_VOLUME=kstack_agent_data \
   ${IMAGE_NAME}

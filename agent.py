@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
     host = settings.AGENT_HOST
     port = settings.AGENT_PORT
-    debug = settings.DEBUG
+    debug = settings.AGENT_DEBUG
     debug = True
 
     print(f"Starting webserver on port {port}")
