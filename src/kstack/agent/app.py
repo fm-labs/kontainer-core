@@ -38,6 +38,7 @@ app.config['result_backend'] = settings.CELERY_RESULT_BACKEND
 app.config['result_expires'] = settings.CELERY_RESULT_EXPIRES
 app.config['task_time_limit'] = settings.CELERY_TASK_TIME_LIMIT
 app.config['task_soft_time_limit'] = int(settings.CELERY_TASK_TIME_LIMIT * 0.9)
+app.config['broker_connection_retry_on_startup'] = True
 
 # Middleware
 CORS(app,

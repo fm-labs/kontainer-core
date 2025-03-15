@@ -2,6 +2,8 @@ import os
 
 from kstack.agent.util.settings_util import get_or_create_jwt_secret
 
+DEBUG=os.getenv("DEBUG", "true").lower() == "true"
+
 # Agent settings
 AGENT_HOST = os.getenv("AGENT_HOST", "127.0.0.1")
 AGENT_PORT = int(os.getenv("AGENT_PORT", "5000"))
