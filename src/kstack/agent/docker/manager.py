@@ -211,6 +211,31 @@ class DockerManager:
         return lines
 
 
+    def list_stack_containers(self, stack_name) -> list[Container]:
+        """
+        Get Containers for Stack
+
+        :param stack_name: Stack Name
+        :return: list
+        """
+        # Get all containers (running + stopped)
+        containers = self.client.containers.list(all=True,
+                                                 filters={"label": f"com.docker.compose.project={stack_name}"})
+
+        return containers
+
+
+    def stack_exists(self, stack_name) -> bool:
+        """
+        Check if Stack Exists
+
+        :param stack_name: Stack Name
+        :return: bool
+        """
+
+        return len(self.list_stack_containers(stack_name)) > 0
+
+
     def list_images(self) -> list[Image]:
         """
         Get Images

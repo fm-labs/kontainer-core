@@ -1,4 +1,7 @@
 import os
+import subprocess
+
+import paramiko
 
 
 def kwargs_to_cmdargs(kwargs) -> list:
@@ -41,3 +44,29 @@ def load_envfile(env_file: str, penv: dict) -> dict:
                 k, v = line.split('=', 1)
                 penv[k] = v.strip()
     return penv
+
+
+def run_command(cmd: str | list):
+    """
+    Invoke Docker Command in Local Shell (Blocking)
+    """
+    try:
+        return subprocess.check_output(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        return e.output
+
+
+def run_command_remote(host: str, cmd: str | list):
+    """
+    Invoke Docker Command via SSH on a Remote Host (Blocking)
+    """
+    ssh_cmd = f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR {host} {cmd}"
+
+    # use paramiko to run ssh command
+    paramiko_ssh = paramiko.SSHClient()
+    paramiko_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    paramiko_ssh.connect(host)
+    stdin, stdout, stderr = paramiko_ssh.exec_command(ssh_cmd)
+
+    #errors = stderr.read()
+    return stdout.read()

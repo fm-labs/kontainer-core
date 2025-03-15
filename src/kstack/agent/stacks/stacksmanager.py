@@ -112,6 +112,15 @@ class StacksManager:
         stack = cls.stacks[name]
         return stack
 
+
+    @classmethod
+    def get_or_unmanaged(cls, name) -> UnmanagedDockerComposeStack | None:
+        stack = cls.get(name)
+        if stack is None:
+            stack = UnmanagedDockerComposeStack(name)
+
+        return stack
+
     @classmethod
     def remove(cls, name) -> None:
         if name not in cls.stacks:
@@ -121,12 +130,6 @@ class StacksManager:
         return stack
 
 
-    @classmethod
-    def _get_or_unmanaged(cls, name):
-        stack = cls.get(name)
-        if stack is None:
-            stack = UnmanagedDockerComposeStack(name)
-        return stack
 
     # STACK OPERATIONS
 
@@ -135,7 +138,7 @@ class StacksManager:
         # if name not in cls.stacks:
         #     raise ValueError(f"Stack {name} not found")
         # stack = cls.stacks[name]
-        stack = cls._get_or_unmanaged(name)
+        stack = cls.get_or_unmanaged(name)
         return stack.up()
 
 
@@ -144,7 +147,7 @@ class StacksManager:
         # if name not in cls.stacks:
         #     raise ValueError(f"Stack {name} not found")
         # stack = cls.stacks[name]
-        stack = cls._get_or_unmanaged(name)
+        stack = cls.get_or_unmanaged(name)
         return stack.restart()
 
 
@@ -153,7 +156,7 @@ class StacksManager:
         # if name not in cls.stacks:
         #     raise ValueError(f"Stack {name} not found")
         # stack = cls.stacks[name]
-        stack = cls._get_or_unmanaged(name)
+        stack = cls.get_or_unmanaged(name)
         return stack.stop()
 
 
@@ -162,7 +165,7 @@ class StacksManager:
         # if name not in cls.stacks:
         #     raise ValueError(f"Stack {name} not found")
         # stack = cls.stacks[name]
-        stack = cls._get_or_unmanaged(name)
+        stack = cls.get_or_unmanaged(name)
         return stack.down()
 
 
@@ -170,7 +173,7 @@ class StacksManager:
     def destroy(cls, name, **kwargs) -> bytes:
         #kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
         out = b""
-        stack = cls._get_or_unmanaged(name)
+        stack = cls.get_or_unmanaged(name)
 
         # Try bringing the stack down first
         try:

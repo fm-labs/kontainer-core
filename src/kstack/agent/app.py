@@ -1,14 +1,16 @@
-#from hmac import compare_digest
+# from hmac import compare_digest
+from datetime import timedelta
 
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended.jwt_manager import JWTManager
-#from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
 
 from . import settings
 from .admin.auth import init_admin_credentials_file
+from .server.error_middleware import ErrorMiddleware
 
-#from .server.middleware import auth_token_middleware
+# from .server.middleware import auth_token_middleware
 
 app = Flask(__name__)
 
@@ -19,7 +21,6 @@ app.config['REPOS_DIR'] = f"{settings.AGENT_DATA_DIR}/repos"
 app.config['UPLOAD_DIR'] = f"{settings.AGENT_DATA_DIR}/uploads"
 app.config['API_KEY'] = settings.AGENT_API_KEY
 
-
 # JWT (Flask-JWT-Extended)
 # Using defaults for now
 # https://flask-jwt-extended.readthedocs.io/en/stable/options.html
@@ -29,10 +30,16 @@ app.config["JWT_HEADER_NAME"] = "Authorization"
 app.config["JWT_HEADER_TYPE"] = "Bearer"
 app.config["JWT_JSON_KEY"] = "access_token"
 app.config["JWT_REFRESH_JSON_KEY"] = "access_token"
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+
+# If true this will only allow the cookies that contain your JWTs to be sent
+# over https. In production, this should always be set to True
+# app.config["JWT_COOKIE_SECURE"] = True
+# app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 
 # Celery
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html
-#app.config['CELERY_RESULT_BACKEND'] = settings.CELERY_RESULT_BACKEND
+# app.config['CELERY_RESULT_BACKEND'] = settings.CELERY_RESULT_BACKEND
 app.config['CELERY_BROKER_URL'] = settings.CELERY_BROKER_URL
 app.config['result_backend'] = settings.CELERY_RESULT_BACKEND
 app.config['result_expires'] = settings.CELERY_RESULT_EXPIRES
@@ -40,17 +47,26 @@ app.config['task_time_limit'] = settings.CELERY_TASK_TIME_LIMIT
 app.config['task_soft_time_limit'] = int(settings.CELERY_TASK_TIME_LIMIT * 0.9)
 app.config['broker_connection_retry_on_startup'] = True
 
-# Middleware
+# Middlewares
+# Global error handler
+ErrorMiddleware(app)
+
+# CORS middleware
 CORS(app,
      allow_headers=["x-api-key", "x-csrf-token", "content-type", "authorization"],
      methods=["OPTIONS", "GET", "POST", "DELETE"],
      origins=["*"])
 
-#auth_token_middleware(app)
+# Auth middleware
+# auth_token_middleware(app)
 jwt = JWTManager(app)
 
-init_admin_credentials_file()
-
+# Admin credentials file initialization
+# todo Move this to a different location
+try:
+    init_admin_credentials_file()
+except Exception as e:
+    print("Error initializing admin credentials file:", e)
 
 # # Database
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"

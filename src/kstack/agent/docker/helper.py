@@ -1,37 +1,22 @@
 import os
 import subprocess
 
-import paramiko
+import docker
+
 from docker import DockerClient
 
 
-def run_docker_local(cmd: str|list):
+def get_docker_volume_size(client: DockerClient, volume_name: str):
     """
-    Run Docker Command
+    Get Docker Volume Size.
+    Uses the 'du' command to calculate the size of the directory.
+    This is a Unix-based solution and may not work on Windows.
+    -> Has bad performance for large volumes.
+
+
+    :param client: DockerClient
+    :param volume_name: str
     """
-    try:
-        return subprocess.check_output(cmd, shell=True)
-    except subprocess.CalledProcessError as e:
-        return e.output
-
-
-def run_docker_remote(host: str, cmd: str|list):
-    """
-    Run Docker via SSH Command
-    """
-    ssh_cmd = f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR {host} {cmd}"
-
-    # use paramiko to run ssh command
-    paramiko_ssh = paramiko.SSHClient()
-    paramiko_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    paramiko_ssh.connect(host)
-    stdin, stdout, stderr = paramiko_ssh.exec_command(ssh_cmd)
-
-    #errors = stderr.read()
-    return stdout.read()
-
-
-def get_docker_volume_size(client: DockerClient, volume_name):
 
     # Get the volume details
     volume = client.volumes.get(volume_name)
@@ -56,3 +41,65 @@ def get_docker_volume_size(client: DockerClient, volume_name):
     return volume_size
 
 
+def get_containers_using_volume(client: DockerClient, volume_name: str):
+    """
+    Get Containers Using a Volume.
+
+    :param client: DockerClient
+    :param volume_name: str
+    :return: list
+    """
+    containers_using_volume = []
+
+    # Iterate through all running containers
+    for container in client.containers.list(all=True):  # 'all=True' includes stopped containers
+        container_info = container.attrs
+        mounts = container_info.get("Mounts", [])
+
+        # Check if the volume is in the container's mounts
+        for mount in mounts:
+            if mount.get("Name") == volume_name:
+                containers_using_volume.append(container.name)
+
+    return containers_using_volume
+
+
+def get_volumes_attached_to_container(client: DockerClient, container_name: str):
+    """
+    List Volumes for a Given Container.
+
+    :param client: DockerClient
+    :param container_name: str
+    :return: list
+    """
+    try:
+        container = client.containers.get(container_name)
+        mounts = container.attrs.get("Mounts", [])
+        volumes = [mount["Name"] for mount in mounts if "Name" in mount]
+
+        return volumes
+    except docker.errors.NotFound:
+        return f"Container '{container_name}' not found."
+
+
+def map_volumes_to_containers(client: DockerClient):
+    """
+    Generate a full map of all volumes and which containers are using them.
+
+    Returns: dict
+    """
+    volume_usage = {}
+
+    # Iterate through all containers
+    for container in client.containers.list(all=True):
+        container_name = container.name
+        mounts = container.attrs.get("Mounts", [])
+
+        for mount in mounts:
+            if "Name" in mount:
+                volume_name = mount["Name"]
+                if volume_name not in volume_usage:
+                    volume_usage[volume_name] = []
+                volume_usage[volume_name].append(container_name)
+
+    return volume_usage

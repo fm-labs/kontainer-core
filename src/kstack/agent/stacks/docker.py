@@ -122,6 +122,9 @@ class DockerComposeStack(ContainerStack):
     #
     #     return meta
 
+    def exists(self) -> bool:
+        return os.path.exists(self.project_dir)
+
 
     def up(self, **kwargs) -> bytes:
         """

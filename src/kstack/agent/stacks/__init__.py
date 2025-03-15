@@ -49,6 +49,10 @@ class ContainerStack(metaclass=ABCMeta):
     def destroy(self) -> bytes:
         pass
 
+    @abstractmethod
+    def exists(self) -> bool:
+        pass
+
     def load(self) -> None:
         if not self.managed:
             print(f"Stack {self.name} is not managed")
