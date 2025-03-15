@@ -4,12 +4,12 @@
 
 init_services() {
 
-  #mkdir -p /etc/ssl
+  #mkdir -p /app/ssl
 
-  if [[ ! -f /etc/ssl/self-signed.crt ]]; then
+  if [[ ! -f /app/ssl/self-signed.crt ]]; then
     echo "Generating self-signed certificate ..."
-    mkdir -p /etc/ssl
-    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/self-signed.key -out /etc/ssl/self-signed.crt -subj '/CN=localhost'
+    mkdir -p /app/ssl
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /app/ssl/self-signed.key -out /app/ssl/self-signed.crt -subj '/CN=localhost'
     RC=$?
     if [[ $RC != 0 ]]; then
       echo "ERROR: Failed to generate self-signed certificate"
@@ -17,9 +17,9 @@ init_services() {
     fi
   fi
 
-  if [[ ! -f /etc/ssl/dhparam.pem ]]; then
+  if [[ ! -f /app/ssl/dhparam.pem ]]; then
     echo "Generating dhparam.pem ..."
-    openssl dhparam -out /etc/ssl/dhparam.pem 2048
+    openssl dhparam -out /app/ssl/dhparam.pem 2048
     RC=$?
     if [[ $RC != 0 ]]; then
       echo "ERROR: Failed to generate dhparam.pem"
@@ -27,10 +27,10 @@ init_services() {
     fi
   fi
 
-  if [[ ! -f /etc/ssl/cert.pem ]]; then
+  if [[ ! -f /app/ssl/cert.pem ]]; then
     echo "Using self signed cert ..."
-    ln -sf /etc/ssl/self-signed.crt /etc/ssl/cert.pem
-    ln -sf /etc/ssl/self-signed.key /etc/ssl/key.pem
+    ln -sf /app/ssl/self-signed.crt /app/ssl/cert.pem
+    ln -sf /app/ssl/self-signed.key /app/ssl/key.pem
   fi
 
   if ! nginx -t ; then
