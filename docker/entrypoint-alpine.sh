@@ -4,12 +4,12 @@
 
 init_services() {
 
-  #mkdir -p /app/ssl
+  mkdir -p /app/data/ssl
 
-  if [[ ! -f /app/ssl/self-signed.crt ]]; then
+  # Generate custom self-signed certificate
+  if [[ ! -f /app/data/ssl/self-signed.crt ]]; then
     echo "Generating self-signed certificate ..."
-    mkdir -p /app/ssl
-    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /app/ssl/self-signed.key -out /app/ssl/self-signed.crt -subj '/CN=localhost'
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /app/data/ssl/self-signed.key -out /app/data/ssl/self-signed.crt -subj '/CN=localhost'
     RC=$?
     if [[ $RC != 0 ]]; then
       echo "ERROR: Failed to generate self-signed certificate"
@@ -17,9 +17,10 @@ init_services() {
     fi
   fi
 
-  if [[ ! -f /app/ssl/dhparam.pem ]]; then
+  # Generate custom dhparam.pem
+  if [[ ! -f /app/data/ssl/dhparam.pem ]]; then
     echo "Generating dhparam.pem ..."
-    openssl dhparam -out /app/ssl/dhparam.pem 2048
+    openssl dhparam -out /app/data/ssl/dhparam.pem 2048
     RC=$?
     if [[ $RC != 0 ]]; then
       echo "ERROR: Failed to generate dhparam.pem"
@@ -27,12 +28,22 @@ init_services() {
     fi
   fi
 
-  if [[ ! -f /app/ssl/cert.pem ]]; then
+  # Use self signed cert, if no other cert is available
+  if [[ ! -f /etc/nginx/ssl/cert.pem ]]; then
     echo "Using self signed cert ..."
-    ln -sf /app/ssl/self-signed.crt /app/ssl/cert.pem
-    ln -sf /app/ssl/self-signed.key /app/ssl/key.pem
+    ln -sf /app/data/ssl/self-signed.crt /etc/nginx/ssl/cert.pem
+    ln -sf /app/data/ssl/self-signed.key /etc/nginx/ssl/key.pem
   fi
 
+  # Use custom dhparam.pem, if no other dhparam.pem is available
+  if [[ ! -f /etc/nginx/ssl/dhparam.pem ]]; then
+    echo "Using self signed cert ..."
+    ln -sf /app/data/ssl/dhparam.pem /etc/nginx/ssl/dhparam.pem
+  fi
+
+  ls -la /etc/nginx/ssl
+
+  # Test nginx configuration
   if ! nginx -t ; then
     echo "ERROR: Failed to test nginx configuration"
     exit 1
