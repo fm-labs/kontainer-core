@@ -55,7 +55,7 @@ class ContainerStack(metaclass=ABCMeta):
 
     def load(self) -> None:
         if not self.managed:
-            print(f"Stack {self.name} is not managed")
+            #print(f"Stack {self.name} is not managed")
             return
 
         with open(self.project_file, "r") as f:
@@ -63,7 +63,7 @@ class ContainerStack(metaclass=ABCMeta):
 
     def dump(self) -> None:
         if not self.managed:
-            print(f"Stack {self.name} is not managed")
+            #print(f"Stack {self.name} is not managed")
             return
 
         with open(self.project_file, "w") as f:
@@ -73,6 +73,7 @@ class ContainerStack(metaclass=ABCMeta):
         return {
             "name": self.name,
             "project_dir": self.project_dir,
+            "project_file": self.project_file,
             "managed": self.managed,
             "meta": self.meta
         }

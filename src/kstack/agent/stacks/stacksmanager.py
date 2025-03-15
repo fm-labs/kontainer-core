@@ -118,6 +118,7 @@ class StacksManager:
         stack = cls.get(name)
         if stack is None:
             stack = UnmanagedDockerComposeStack(name)
+            cls.add(stack) # Add the unmanaged stack to the manager
 
         return stack
 
@@ -144,27 +145,18 @@ class StacksManager:
 
     @classmethod
     def restart(cls, name) -> bytes:
-        # if name not in cls.stacks:
-        #     raise ValueError(f"Stack {name} not found")
-        # stack = cls.stacks[name]
         stack = cls.get_or_unmanaged(name)
         return stack.restart()
 
 
     @classmethod
     def stop(cls, name) -> bytes:
-        # if name not in cls.stacks:
-        #     raise ValueError(f"Stack {name} not found")
-        # stack = cls.stacks[name]
         stack = cls.get_or_unmanaged(name)
         return stack.stop()
 
 
     @classmethod
     def delete(cls, name) -> bytes:
-        # if name not in cls.stacks:
-        #     raise ValueError(f"Stack {name} not found")
-        # stack = cls.stacks[name]
         stack = cls.get_or_unmanaged(name)
         return stack.down()
 
@@ -188,12 +180,12 @@ class StacksManager:
             out += bytes(f"\n\nError during stack destroy: {e}", 'utf-8')
 
         # Remove the stack file and directory from the local filesystem
-        if os.path.exists(stack.project_dir):
+        if stack.managed and os.path.exists(stack.project_dir):
             # Remove the project directory recursively with shutil.rmtree
             shutil.rmtree(stack.project_dir)
             out += bytes(f"\n\nDeleted project directory {stack.project_dir}", 'utf-8')
 
-        if os.path.exists(stack.project_file):
+        if stack.managed and os.path.exists(stack.project_file):
             os.remove(stack.project_file)
             out += bytes(f"\n\nDeleted project file {stack.project_file}", 'utf-8')
 
@@ -206,7 +198,12 @@ class StacksManager:
 
     @classmethod
     def sync(cls, name) -> bytes:
-        if name not in cls.stacks:
-            raise ValueError(f"Stack {name} not found")
-        stack = cls.stacks[name]
+        #if name not in cls.stacks:
+        #    raise ValueError(f"Stack {name} not found")
+
+        stack = cls.get_or_unmanaged(name)
+        if stack is None or isinstance(stack, UnmanagedDockerComposeStack):
+            raise ValueError(f"Cannot sync unmanaged stack {name}")
+
+        # stack = cls.stacks[name]
         return sync_stack(stack)

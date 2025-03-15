@@ -117,17 +117,8 @@ def sync_stack(name):
 def describe_stack(name):
     # Managed
     # First check if the stack is managed
-    stack = StacksManager.get(name)
-    if stack is not None:
-        return jsonify(stack.serialize())
-
-    # Unmanaged
-    # Check the container list, if any container has the label com.docker.compose.project=name
-    if dkr.stack_exists(name):
-        stack = StacksManager.get_or_unmanaged(name)
-        return jsonify(stack.serialize())
-
-    return jsonify({"error": f"Stack {name} not found"}), 404
+    stack = StacksManager.get_or_unmanaged(name)
+    return jsonify(stack.serialize())
 
 
 @stacks_api_bp.route('/<string:name>/restart', methods=["POST"])

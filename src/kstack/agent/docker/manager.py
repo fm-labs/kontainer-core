@@ -125,6 +125,7 @@ class DockerManager:
             raise ContainerNotFoundError(key)
 
         container = self.client.containers.get(key)
+        container.restart()
         return container
 
 
@@ -234,6 +235,22 @@ class DockerManager:
         """
 
         return len(self.list_stack_containers(stack_name)) > 0
+
+
+    def get_stack_project_dir(self, stack_name) -> str | None:
+        """
+        Get Project Directory for Stack
+
+        :param stack_name: Stack Name
+        :return: str
+        """
+        containers = self.list_stack_containers(stack_name)
+        if len(containers) == 0:
+            return None
+
+        container = containers[0]
+        project_dir = container.attrs['Config']['Labels']['com.docker.compose.project.working_dir']
+        return project_dir
 
 
     def list_images(self) -> list[Image]:
