@@ -4,6 +4,7 @@ import subprocess
 
 from docker.constants import DEFAULT_TIMEOUT_SECONDS
 
+from kstack.agent import settings
 from kstack.agent.docker.dkr import dkr
 from kstack.agent.stacks import ContainerStack
 from kstack.agent.util.subprocess_util import kwargs_to_cmdargs, load_envfile
@@ -28,11 +29,13 @@ class DockerComposeStack(ContainerStack):
             base_path = self.meta.get('base_path', "")
             working_dir = os.path.join(self.project_dir, base_path)
 
+
         compose_file = 'docker-compose.yml'
         if os.path.exists(os.path.join(working_dir, 'docker-compose.stack.yml')):
             compose_file = 'docker-compose.stack.yml'
         # if os.path.exists('docker-compose.override.yml'):
         #    compose_file = 'docker-compose.override.yml'
+
 
         compose_args = dict()
         compose_args['project-name'] = self.name
@@ -50,6 +53,7 @@ class DockerComposeStack(ContainerStack):
             # penv = os.environ.copy()
             penv = dict()
             penv['PATH'] = os.getenv('PATH')
+            penv['DOCKER_CONFIG'] = settings.DOCKER_CONFIG
             penv['COMPOSE_PROJECT_DIRECTORY'] = working_dir
             penv['COMPOSE_PROJECT_NAME'] = self.name
             penv['COMPOSE_FILE'] = compose_file

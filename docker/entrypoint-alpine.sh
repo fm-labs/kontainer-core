@@ -93,6 +93,12 @@ CURRENTUSERID=`id`
 echo "WHOAMI: ${CURRENTUSER}"
 echo "ID: ${CURRENTUSERID}"
 
+mkdir -p /app/data/docker
+touch /app/data/docker/config.json
+export DOCKER_CONFIG=/app/data/docker/
+export PYTHON_UNBUFFERED=1
+export PYTHONPATH=/app/src:$PYTHONPATH
+export PATH=/app/bin:$PATH
 
 case $1 in
 

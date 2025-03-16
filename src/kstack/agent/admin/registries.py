@@ -2,7 +2,10 @@ import os
 import json
 
 from kstack.agent import settings
+from kstack.agent.docker.dkr import dkr
 from kstack.agent.settings import DEFAULT_CONTAINER_REGISTRIES
+from kstack.agent.util.aws_util import aws_ecr_login
+from kstack.agent.util.docker_utils import dockercli_login_ecr_with_awscli
 
 CONFIG_DIR = os.path.join(settings.AGENT_DATA_DIR, 'config')
 CONTAINER_REGISTRIES_FILE = os.path.join(CONFIG_DIR, 'registries.json')
@@ -113,3 +116,62 @@ def delete_container_registry(registry_name: str) -> list:
     new_registries = [r for r in registries if r["name"] != registry_name]
     write_container_registries(new_registries)
     return new_registries
+
+
+def request_container_registry_login(registry_name: str) -> bool:
+    """
+    Request a login to a container registry.
+
+    :param registry_name: Name of the container registry
+    :return: Response from the container registry
+    """
+    print("Requesting login for {}".format(registry_name))
+    registry = find_container_registry(registry_name)
+    if registry is None:
+        raise Exception(f"Container registry '{registry_name}' not found")
+
+    host = registry.get("host", "")
+    url_schema = "http" if registry.get("insecure", "false") == "true" else "https"
+    url = f"{url_schema}://{host}"
+    username = registry.get("username", "")
+    password = registry.get("password", "")
+
+    # AWS ECR login
+    if host.endswith(".amazonaws.com"):
+        # Fallback to AWS credentials if no username and password are set
+        if username == "" and password == "":
+            username = settings.AWS_ACCESS_KEY_ID
+            password = settings.AWS_SECRET_ACCESS_KEY
+
+        print(f"Logging in to AWS ECR {host} with {username}", flush=True)
+        # # Request AWS ECR auth token
+        # ecr_login_result = aws_ecr_loginregion=settings.AWS_REGION,
+        #         #                                  profile=settings.AWS_PROFILE,
+        #         #                                  access_key=username,
+        #         #                                  secret_key=password
+        # if not ecr_login_result:
+        #     raise Exception("Failed to login to AWS ECR")
+        #
+        # # Use the obtained password to log in to Docker
+        # url, username, password = ecr_login_result
+        ecr_login_result = dockercli_login_ecr_with_awscli(ecr_url=host, # {account}.dkr.ecr.{region}.amazonaws.com
+                                        region=settings.AWS_REGION,
+                                        profile=settings.AWS_PROFILE,
+                                        access_key=username,
+                                        secret_key=password)
+        if not ecr_login_result:
+            raise Exception("Failed to login to AWS ECR")
+
+        #url, username, password = ecr_login_result
+        return True
+
+    # @todo GitHub login
+    # @todo Docker Hub login
+    # @todo Quay.io login
+
+    # Generic Docker registry login
+    print(f"Logging in to Docker at {url} with {username}", flush=True)
+    if dkr.registry_login(url, username, password):
+        return True
+
+    return False

@@ -46,6 +46,7 @@ WSGI_APP=wsgi:app
 echo "Starting gunicorn (${BIND}) as ${USER}:${GROUP} ..."
 sleep 3
 exec gunicorn ${WSGI_APP} \
+  --capture-output \
   --name ${NAME} \
   --workers ${NUM_WORKERS} \
   --bind=${BIND} \

@@ -43,6 +43,7 @@ LOG_FILE=${LOG_FILE:--}
 
 echo "Starting gunicorn (${BIND}) as ${USER}:${GROUP} ..."
 exec gunicorn ${WSGI_APP} \
+  --capture-output \
   --name ${NAME} \
   --workers ${NUM_WORKERS} \
   --bind=${BIND} \

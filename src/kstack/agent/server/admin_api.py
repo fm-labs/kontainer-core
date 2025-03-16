@@ -1,12 +1,13 @@
 import re
 
-import flask.app
+import flask
 from flask import jsonify, request
 from flask_jwt_extended.view_decorators import jwt_required
 
+from kstack.agent.app import app
 from kstack.agent.admin.credentials import private_key_exists, write_private_key, delete_private_key, find_private_keys
 from kstack.agent.admin.registries import update_container_registry, delete_container_registry, \
-    list_container_registries
+    list_container_registries, request_container_registry_login
 
 admin_api_bp = flask.Blueprint('admin_api', __name__, url_prefix='/api/admin')
 
@@ -34,6 +35,20 @@ def container_registries_update(registry_name):
     }
     registry = update_container_registry(registry_name, registry_data)
     return jsonify(registry), 200
+
+
+@admin_api_bp.route('/registries/<string:registry_name>/login', methods=["POST"])
+@jwt_required()
+def container_registry_login(registry_name):
+    try:
+        app.logger.info(f"Requesting login for {registry_name}")
+        success = request_container_registry_login(registry_name)
+        if not success:
+            return jsonify({'error': 'Login failed'}), 401
+
+        return jsonify({'message': 'Login successful'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 
 @admin_api_bp.route('/registries/<string:registry_name>', methods=["DELETE"])

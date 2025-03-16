@@ -1,5 +1,14 @@
+from kstack.agent.admin.registries import request_container_registry_login
 from kstack.agent.celery import celery
 from kstack.agent.docker.dkr import dkr
+
+
+@celery.task(bind=True)
+def registry_login_task(self, registry_name):
+    print(f"Registry LOGIN {registry_name}")
+    #dkr.registry_login(registry, username, password)
+    request_container_registry_login(registry_name)
+
 
 @celery.task(bind=True)
 def container_start_task(self, container_id):

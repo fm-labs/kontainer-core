@@ -1,5 +1,6 @@
 # from hmac import compare_digest
 from datetime import timedelta
+import logging
 
 from flask import Flask
 from flask_cors import CORS
@@ -13,6 +14,10 @@ from .server.error_middleware import ErrorMiddleware
 # from .server.middleware import auth_token_middleware
 
 app = Flask(__name__)
+app.logger.info("Initializing KSTACK agent")
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
 
 # App configuration
 app.config['DATA_DIR'] = settings.AGENT_DATA_DIR

@@ -2,6 +2,7 @@ FROM python:3.13-alpine
 
 ENV AGENT_HOST=0.0.0.0
 ENV AGENT_PORT=5000
+ENV PATH="/usr/local/bin:${PATH}"
 
 ARG DOCKER_DIR=/var/lib/docker
 ARG DOCKER_COMPOSE_VERSION=2.34.0
@@ -16,10 +17,12 @@ RUN apk update && apk add --no-cache \
     openssl \
     docker-cli \
     git \
+    unzip \
+    aws-cli \
     openssh
 
 
-# Install poetry and docker-compose
+# Install poetry and other python tools
 # https://stackoverflow.com/questions/76708329/docker-compose-no-longer-building-image-attributeerror-cython-sources
 #RUN pip install --no-cache-dir --upgrade pip poetry setuptools wheel "cython<3.0.0" && \
 #    pip install --no-cache-dir --no-build-isolation pyyaml===5.4.1 && \
@@ -27,6 +30,7 @@ RUN apk update && apk add --no-cache \
 RUN pip install --no-cache-dir --upgrade pip poetry setuptools wheel
 
 
+# Install docker-compose
 RUN mkdir -p $DOCKER_DIR/cli-plugins && \
     ARCH=$(uname -m) && \
     COMPOSE_DOWNLOAD_URL=https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-linux-${ARCH} && \
@@ -37,6 +41,23 @@ RUN mkdir -p $DOCKER_DIR/cli-plugins && \
 
 RUN DOCKER_COMPOSE=$(which docker-compose) && \
     echo "DOCKER_COMPOSE=$DOCKER_COMPOSE"
+
+
+# Install AWS CLI v2
+#WORKDIR /tmp
+#RUN ARCH=$(uname -m) && \
+#    set -eux && \
+#    curl -SL --fail "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o "/tmp/awscliv2.zip" && \
+#    unzip /tmp/awscliv2.zip && \
+#    chmod +x ./aws/install && \
+#    chmod +x ./aws/dist/aws && \
+#    ls -la ./aws && \
+#    ls -la ./aws/dist && \
+#    ./aws/install && \
+#    rm -rf ./aws /tmp/awscliv2.zip
+#
+#RUN /usr/local/bin/aws --version && \
+#    aws --version
 
 
 # Set a non-root user
@@ -81,6 +102,8 @@ ENTRYPOINT ["/entrypoint.sh"]
 CMD ["supervisor"]
 
 RUN mkdir -p /etc/nginx/ssl/ && \
+    mkdir -p /app/data/docker && \
+    touch /app/data/docker/config && \
     mkdir -p /app/data/ssl && \
     mkdir -p /var/lib/redis && \
     mkdir -p /var/log/supervisor && \
@@ -105,6 +128,7 @@ RUN chown -R appuser:appgroup /run && \
     chown -R appuser:appgroup /var/lib/docker/cli-plugins && \
     chown -R appuser:appgroup /usr/local/bin/docker-compose && \
     chown -R appuser:appgroup /app/data/ && \
+    chown -R appuser:appgroup /app/data/docker && \
     chown -R appuser:appgroup /app/data/ssl
 
 

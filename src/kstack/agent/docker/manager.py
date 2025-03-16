@@ -1,9 +1,12 @@
+from sys import api_version
+
 import docker
 from docker.models.containers import Container
 from docker.models.images import Image
 from docker.models.networks import Network
 from docker.models.volumes import Volume
 
+from kstack.agent import settings
 from kstack.agent.docker.helper import get_docker_volume_size
 from kstack.agent.error import ContainerNotFoundError
 
@@ -21,6 +24,41 @@ class DockerManager:
             self.client = docker.from_env(use_ssh_client=use_ssh_client)
         else:
             self.client = docker.DockerClient(base_url=base_url, use_ssh_client=use_ssh_client)
+
+    def ping(self) -> bool:
+        """
+        Ping Docker Engine
+
+        :return: bool
+        """
+        return self.client.ping()
+
+
+    def version(self) -> str:
+        """
+        Get Docker Version Info
+
+        :return: dict
+        """
+        return self.client.version(api_version=True)
+
+
+    def registry_login(self, registry, username, password) -> dict:
+        """
+        Login to Docker Registry
+
+        :param registry: Registry URL
+        :param username: Username
+        :param password: Password
+        :return: dict The response from the login request
+        """
+        print(f"Logging in to Docker Registry at {registry}. Using docker config at {settings.DOCKER_CONFIG}")
+        result = self.client.login(registry=registry,
+                                   username=username,
+                                   password=password,
+                                   dockercfg_path=settings.DOCKER_CONFIG)
+        return result
+
 
 
     def start_container(self, key) -> Container:

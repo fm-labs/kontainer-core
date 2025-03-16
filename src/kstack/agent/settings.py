@@ -5,6 +5,8 @@ from kstack.agent.util.settings_util import get_or_create_jwt_secret
 
 # Docker settings
 DOCKER_HOST = os.getenv("DOCKER_HOST", "unix:///var/run/docker.sock")
+#DOCKER_CONFIG = os.getenv("DOCKER_CONFIG", ".docker/config.json")
+DOCKER_CONFIG = os.getenv("DOCKER_CONFIG")
 
 # DOCKER_HOME is the directory where Docker stores its data.
 # This refers to the host directory, not the container directory.
@@ -52,6 +54,13 @@ CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
 CELERY_RESULT_EXPIRES = int(os.getenv("CELERY_RESULT_EXPIRES", "3600"))
 CELERY_TASK_TIME_LIMIT = int(os.getenv("CELERY_TASK_TIME_LIMIT", "900"))
+
+# AWS settings
+AWS_CLI_BIN = os.getenv("AWS_CLI_BIN", "")
+AWS_REGION = os.getenv("AWS_REGION", "eu-central-1")
+AWS_PROFILE = os.getenv("AWS_PROFILE", "")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "")
 
 
 # Default Container Registries
