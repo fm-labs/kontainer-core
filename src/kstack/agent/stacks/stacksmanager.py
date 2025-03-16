@@ -201,6 +201,10 @@ class StacksManager:
         #if name not in cls.stacks:
         #    raise ValueError(f"Stack {name} not found")
 
+        # Refresh the list of stacks
+        # @todo find a better way to do this
+        StacksManager.enumerate()
+
         stack = cls.get_or_unmanaged(name)
         if stack is None or isinstance(stack, UnmanagedDockerComposeStack):
             raise ValueError(f"Cannot sync unmanaged stack {name}")
