@@ -128,7 +128,7 @@ case $1 in
 
     # Only allow connections from localhost
     # export AGENT_HOST=127.0.0.1
-
+    export LOG_FILE=/dev/fd/1
     exec /app/bin/gunicorn_tcp.sh
     ;;
 

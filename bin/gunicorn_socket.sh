@@ -35,6 +35,7 @@ SOCKFILE=/run/gunicorn.sock
 BIND=unix:$SOCKFILE
 
 LOG_LEVEL=${LOG_LEVEL:-info}
+LOG_FILE=${LOG_FILE:--}
 
 # Create the run directory if it doesn't exist
 # RUNDIR=$(dirname $SOCKFILE)
@@ -46,4 +47,4 @@ exec gunicorn ${WSGI_APP} \
   --workers ${NUM_WORKERS} \
   --bind=${BIND} \
   --log-level=${LOG_LEVEL} \
-  --log-file=-
+  --log-file=${LOG_FILE}

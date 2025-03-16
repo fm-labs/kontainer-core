@@ -30,6 +30,7 @@ NUM_WORKERS=${AGENT_WORKERS:-3}
 
 # Gunicorn log level
 LOG_LEVEL=${LOG_LEVEL:-info}
+LOG_FILE=${LOG_FILE:--}
 
 # we will communicate using this tcp address and port
 #BIND=0.0.0.0:5000
@@ -49,4 +50,4 @@ exec gunicorn ${WSGI_APP} \
   --workers ${NUM_WORKERS} \
   --bind=${BIND} \
   --log-level=${LOG_LEVEL} \
-  --log-file=-
+  --log-file=${LOG_FILE}
