@@ -3,7 +3,7 @@ import os
 from kstack.agent.admin.credentials import private_key_exists
 from kstack.agent.settings import get_real_app_data_path
 from kstack.agent.stacks import ContainerStack
-from kstack.agent.util.composefile_util import modify_docker_compose
+from kstack.agent.util.composefile_util import modify_docker_compose_volumes
 from kstack.agent.util.git_util import git_clone, git_pull_head
 
 
@@ -133,7 +133,7 @@ def _process_compose_file(stack: ContainerStack) -> str | None:
 
     output_path = os.path.join(stack.project_dir, base_path, "docker-compose.stack.yml")
     prefix = os.path.join(get_real_app_data_path(), "stacks", stack.name, base_path)
-    modify_docker_compose(compose_file_path, output_path, prefix)
+    modify_docker_compose_volumes(compose_file_path, output_path, prefix)
     print(f"Modified docker-compose.yml saved to {output_path}")
     return output_path
 
