@@ -26,5 +26,6 @@ docker run \
   -e AGENT_DATA_DIR=/app/data \
   -e AGENT_DATA_HOME=$PWD/data \
   -e AGENT_WORKERS=1 \
-  -e LOG_LEVEL=debug \
+  -e AGENT_DEBUG=1 \
+  -e LOG_LEVEL=info \
   ${DEV_IMAGE_TAG} $@

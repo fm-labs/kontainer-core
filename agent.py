@@ -19,7 +19,9 @@ if __name__ == '__main__':
     host = settings.AGENT_HOST
     port = settings.AGENT_PORT
     debug = settings.AGENT_DEBUG
-    debug = True
 
+    print(f"AGENT_DATA_DIR: {settings.AGENT_DATA_DIR}")
+    print(f"AGENT_DATA_HOME: {settings.AGENT_DATA_HOME}")
     print(f"Starting webserver on port {port}")
+
     app.run(debug=debug, port=port, host=host)
