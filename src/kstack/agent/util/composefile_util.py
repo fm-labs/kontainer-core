@@ -3,25 +3,41 @@ import os
 import yaml
 
 
-
 def modify_docker_compose_volumes(file_path, output_path, prefix):
     """Read, modify, and save the docker-compose.yml file with updated volume mounts."""
 
     def prepend_volume_path_prefix(volume, prefix):
         """Prepend a path prefix to the host path in a volume mount."""
         parts = volume.split(":")
-        if len(parts) != 2:
-            print(f"Invalid volume mount: {volume}")
-            return volume
+        if len(parts) == 2:
+            host_path: str = parts[0]
+            container_path: str = parts[1]
+            perm = "rw"
+        elif len(parts) == 3:
+            host_path: str = parts[0]
+            container_path: str = parts[1]
+            perm = parts[2]
+        else:
+            #print(f"Invalid volume mount: {volume}")
+            #return volume
+            raise ValueError(f"Invalid volume mount: {volume}")
 
-        host_path = parts[0]
-        # container_path = parts[1]
-        # Only modify relative host paths
-        if os.path.isabs(host_path) or not host_path.startswith("./"):
-            return volume
-
-        parts[0] = os.path.join(prefix, parts[0])
-        return ":".join(parts)
+        if host_path.startswith("../") or ".." in host_path:
+            raise ValueError(f"Relative parent path not allowed: {host_path}")
+        elif host_path.startswith("./"):
+            # relative host path
+            parts[0] = os.path.join(prefix, host_path[2:])
+            return ":".join(parts)
+        elif host_path.startswith("/"):
+            # absolute host path
+            # @todo restrict to paths that are not absolute
+            pass
+        elif "/" in host_path:
+            raise ValueError(f"Invalid host path: {host_path}")
+        else:
+            # docker volume
+            pass
+        return volume
 
 
     with open(file_path, "r") as file:

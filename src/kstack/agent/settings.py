@@ -20,8 +20,8 @@ AGENT_PORT = int(os.getenv("AGENT_PORT", "5000"))
 
 AGENT_DATA_DIR = os.getenv("AGENT_DATA_DIR", os.path.join(os.getcwd(), "data"))
 AGENT_DATA_HOME = os.getenv("AGENT_DATA_HOME", None)
+AGENT_DATA_VOLUME = os.getenv("AGENT_DATA_VOLUME", None)
 if AGENT_DATA_HOME is None or AGENT_DATA_HOME == "":
-    AGENT_DATA_VOLUME = os.getenv("AGENT_DATA_VOLUME", "kstack_agent_data")
     if AGENT_DATA_VOLUME is not None and AGENT_DATA_VOLUME != "":
         AGENT_DATA_HOME = f"{DOCKER_HOME}/volumes/{AGENT_DATA_VOLUME}/_data/"
     else:
