@@ -11,8 +11,10 @@ from kstack.agent.util.subprocess_util import kwargs_to_cmdargs, load_envfile
 
 
 class DockerComposeStack(ContainerStack):
+
     def __init__(self, name, managed=False, meta=None, **kwargs):
         super().__init__(name, managed=managed, meta=meta)
+
 
     def _compose(self, cmd, **kwargs) -> bytes:
         """
@@ -78,6 +80,7 @@ class DockerComposeStack(ContainerStack):
             print(e)
             raise e
 
+
     @property
     def status(self) -> dict:
         """
@@ -93,20 +96,12 @@ class DockerComposeStack(ContainerStack):
         })
         return status
 
-    # @property
-    # def meta(self):
-    #     # read the stack file contents
-    #     meta = dict()
-    #     if os.path.exists(self.project_file):
-    #         with open(self.project_file, "r") as f:
-    #             meta = json.load(f)
-    #
-    #     return meta
 
     def exists(self) -> bool:
         if self.project_dir is None:
             return False
         return os.path.exists(self.project_dir)
+
 
     def up(self, **kwargs) -> bytes:
         """
@@ -123,8 +118,8 @@ class DockerComposeStack(ContainerStack):
         kwargs['build'] = True if 'build' not in kwargs else kwargs['build']
         kwargs['force-recreate'] = True if 'force-recreate' not in kwargs else kwargs['force-recreate']
         # kwargs['y'] = True if 'y' not in kwargs else kwargs['y'] # run non-interactively
-
         return self._compose("up", **kwargs)
+
 
     def down(self, **kwargs) -> bytes:
         """
@@ -139,6 +134,7 @@ class DockerComposeStack(ContainerStack):
         kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
         return self._compose("down", **kwargs)
 
+
     def stop(self, **kwargs) -> bytes:
         """
         Stop the stack.
@@ -152,6 +148,7 @@ class DockerComposeStack(ContainerStack):
         kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
         return self._compose("stop", **kwargs)
 
+
     def restart(self, **kwargs) -> bytes:
         print(f"COMPOSE RESTART {self.name} in {self.project_dir}")
 
@@ -159,11 +156,13 @@ class DockerComposeStack(ContainerStack):
         kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
         return self._compose("restart", **kwargs)
 
+
     def destroy(self, **kwargs) -> bytes:
         # print(f"COMPOSE DESTROY {self.name} in {self.project_dir}")
         # No docker-specific destroy actions needed.
         # Just remove the project directory and the project file using the stack manager.
         return b"COMPOSE DESTROY: No docker-specific destroy actions executed."
+
 
     def ps(self, **kwargs) -> bytes:
         """
@@ -174,7 +173,6 @@ class DockerComposeStack(ContainerStack):
         :param kwargs: Additional arguments to pass to docker compose ps
         """
         return self._compose("ps", **kwargs)
-
 
 
 
