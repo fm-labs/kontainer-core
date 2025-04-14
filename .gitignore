@@ -2,7 +2,10 @@
 data/
 experimental/
 templates/
+docker-compose-local.yml
 *.log
+*.local
+x*.sh
 
 ### Python template
 # Byte-compiled / optimized / DLL files

@@ -58,7 +58,10 @@ ErrorMiddleware(app)
 
 # CORS middleware
 CORS(app,
-     allow_headers=["x-api-key", "x-csrf-token", "content-type", "authorization"],
+     allow_headers=[
+         "x-api-key", "x-csrf-token",
+         "content-type", "authorization",
+         "x-docker-context", "x-docker-host"],
      methods=["OPTIONS", "GET", "POST", "DELETE"],
      origins=["*"])
 

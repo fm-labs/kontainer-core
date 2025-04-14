@@ -6,26 +6,31 @@ from kstack.agent import settings
 
 class KstackEnvironment:
 
-    def __init__(self, hostname):
-        self.hostname = hostname
+    def __init__(self, remote_host, remote_user=None, remote_ssh_key=None, remote_ssh_port=22,
+                 description=None):
+
+        self.remote_host = remote_host
+        self.remote_user = remote_user
+        self.remote_ssh_key = remote_ssh_key
+        self.remote_ssh_port = remote_ssh_port
+        self.description = description
 
 
     def __str__(self):
-        return f"{self.hostname}"
+        return f"{self.remote_host}"
 
 
     def __repr__(self):
-        return f"{self.hostname}"
+        return f"{self.remote_host}"
 
 
     def to_dict(self):
         return {
-            "hostname": self.hostname,
-            #"hostname": self.hostname,
-            #"id": self.id,
-            #"ip": self.ip,
-            #"description": self.description,
-            #"status": self.status
+            "remote_host": self.remote_host,
+            "remote_user": self.remote_user,
+            "remote_ssh_key": self.remote_ssh_key,
+            "remote_ssh_port": self.remote_ssh_port,
+            "description": self.description
         }
 
 
@@ -51,7 +56,7 @@ class EnvManager:
                 if os.path.exists(env_file):
                     # with open(env_file, "r") as f:
                     #     env_data = json.load(f)
-                    #     env = KstackEnvironment(env_data["hostname"])
+                    #     env = KstackEnvironment(env_data["remote_host"])
                     #     cls.envs.append(env)
                     cls.envs.append(KstackEnvironment(env_dir))
 
@@ -67,11 +72,11 @@ class EnvManager:
     def create(cls, env: KstackEnvironment) -> KstackEnvironment:
         # check if env already exists
         for _env in cls.envs:
-            if _env.hostname == env.hostname:
-                raise Exception(f"Environment with hostname {env.hostname} already exists")
+            if _env.remote_host == env.remote_host:
+                raise Exception(f"Environment with remote_host {env.remote_host} already exists")
 
         # create the environment directory and save the env.json file
-        env_dir = f"{settings.AGENT_DATA_DIR}/environments/{env.hostname}"
+        env_dir = f"{settings.AGENT_DATA_DIR}/environments/{env.remote_host}"
         os.makedirs(env_dir, exist_ok=True)
 
         env_file = f"{env_dir}/env.json"
@@ -83,19 +88,19 @@ class EnvManager:
 
 
     @classmethod
-    def get(cls, hostname) -> KstackEnvironment | None:
+    def get(cls, remote_host) -> KstackEnvironment | None:
         for env in cls.envs:
-            if env.hostname == hostname:
+            if env.remote_host == remote_host:
                 return env
         return None
 
 
     @classmethod
-    def remove(cls, hostname) -> KstackEnvironment | None:
+    def remove(cls, remote_host) -> KstackEnvironment | None:
         for env in cls.envs:
-            if env.hostname == hostname:
+            if env.remote_host == remote_host:
                 # just rename the env.json file to env.deleted.json
-                env_dir = f"{settings.AGENT_DATA_DIR}/environments/{env.hostname}"
+                env_dir = f"{settings.AGENT_DATA_DIR}/environments/{env.remote_host}"
                 os.rename(f"{env_dir}/env.json", f"{env_dir}/env.deleted.json")
 
                 cls.envs.remove(env)

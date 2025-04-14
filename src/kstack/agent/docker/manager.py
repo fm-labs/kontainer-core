@@ -1,3 +1,4 @@
+import json
 from sys import api_version
 
 import docker
@@ -41,6 +42,15 @@ class DockerManager:
         :return: dict
         """
         return self.client.version(api_version=True)
+
+
+    def info(self) -> dict:
+        """
+        Get Docker Client Info as dict
+        """
+        info = self.client.info()
+        info_dict = json.loads(json.dumps(info))
+        return info_dict
 
 
     def registry_login(self, registry, username, password) -> dict:
