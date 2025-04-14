@@ -1,16 +1,15 @@
 import flask
-from flask import jsonify, request
+from flask import jsonify, request, g
 from flask_jwt_extended.view_decorators import jwt_required
 
-from ..docker.manager import DockerManager
-from ..stacks.docker import DockerComposeStack
-from ..stacks.stacksmanager import StacksManager
-from ..stacks.tasks import stack_start_task, stack_stop_task, stack_destroy_task, stack_restart_task, create_stack_task, \
+from kstack.agent.server.middleware import docker_service_middleware
+from kstack.agent.stacks.docker import DockerComposeStack
+from kstack.agent.stacks.stacksmanager import StacksManager
+from kstack.agent.stacks.tasks import stack_start_task, stack_stop_task, stack_destroy_task, stack_restart_task, create_stack_task, \
     stack_delete_task, stack_sync_task
 
 stacks_api_bp = flask.Blueprint('stacks_api', __name__, url_prefix='/api/stacks')
-
-dkr = DockerManager()
+docker_service_middleware(stacks_api_bp)
 
 
 @stacks_api_bp.route('', methods=["GET"])
@@ -24,7 +23,7 @@ def list_stacks():
 
     # get all running containers
     # time_start = time.time()
-    containers = dkr.list_containers()
+    containers = g.dkr.list_containers()
     # print(f"Listed containers (1) in {time.time() - time_start} seconds")
     active_stack_names = list(
         set([c.attrs.get('Config', {}).get('Labels', {}).get('com.docker.compose.project') for c in containers]))

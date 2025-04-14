@@ -1,7 +1,10 @@
 import hashlib
 
-from flask import request, jsonify
+from flask import request, jsonify, g, abort
 from flask_jwt_extended import verify_jwt_in_request
+
+from kstack.agent.docker.service import DockerService
+
 
 # Middleware to check API key presence
 def auth_token_middleware(app):
@@ -62,3 +65,25 @@ def check_jwt_middleware(app):
             verify_jwt_in_request()
         except Exception as e:
             return jsonify({"error": "Missing or invalid token", "message": str(e)}), 401
+
+
+def docker_service_middleware(app):
+    @app.before_request
+    def inject_docker_service():
+        # Check if the request is an OPTIONS request
+        if request.method == "OPTIONS":
+            return
+
+        docker_ctxid = request.headers.get('X-Docker-Context')
+        if not docker_ctxid:
+            # abort(400, description="Missing required header: X-Docker-Context")
+            return jsonify({"error": "Missing required header: X-Docker-Context"}), 401
+
+        # # validate format
+        # try:
+        #     docker_ctxid = int(docker_ctxid)
+        # except ValueError:
+        #     # abort(400, description="Invalid X-Docker-Context: must be an integer")
+        #     return jsonify({"error": "Invalid X-Docker-Context: must be an integer"}), 400
+
+        g.dkr = DockerService(docker_ctxid).dkr

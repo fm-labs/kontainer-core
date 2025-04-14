@@ -3,12 +3,13 @@ import threading
 import time
 
 from docker.types import CancellableStream
-from flask import jsonify, request, Blueprint
+from flask import jsonify, request, Blueprint, g
 from flask_jwt_extended.view_decorators import jwt_required
 
-from kstack.agent.docker.dkr import dkr
+from kstack.agent.server.middleware import docker_service_middleware
 
-engine_api_bp = Blueprint('engine_api', __name__, url_prefix='/api/engine')
+engine_api_bp = Blueprint('engine_api', __name__, url_prefix='/api/docker/engine')
+docker_service_middleware(engine_api_bp)
 
 
 @engine_api_bp.route('/info', methods=["GET"])
@@ -19,7 +20,7 @@ def engine_info():
 
     :return: dict
     """
-    info = dkr.client.info()
+    info = g.dkr.client.info()
     info_dict = json.loads(json.dumps(info))
     return jsonify(info_dict)
 
@@ -32,7 +33,7 @@ def engine_version():
 
     :return: dict
     """
-    version = dkr.client.version()
+    version = g.dkr.client.version()
     return jsonify(version)
 
 
@@ -44,7 +45,7 @@ def engine_ping():
 
     :return: dict
     """
-    ping = dkr.client.ping()
+    ping = g.dkr.client.ping()
     return jsonify(ping)
 
 
@@ -56,7 +57,7 @@ def engine_df():
 
     :return: dict
     """
-    df = dkr.client.df()
+    df = g.dkr.client.df()
     return jsonify(df)
 
 
@@ -93,7 +94,7 @@ def engine_events():
     events = list()
 
     def read_events():
-        events_stream: CancellableStream = dkr.client.events(decode=True,
+        events_stream: CancellableStream = g.dkr.client.events(decode=True,
                                                              since=since,
                                                              until=until,
                                                              filters=filters)

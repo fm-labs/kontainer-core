@@ -1,20 +1,20 @@
 import flask
-from flask import jsonify, request
+from flask import jsonify, request, g
 from flask_jwt_extended.view_decorators import jwt_required
 
-from .. import settings
-from kstack.agent.docker.dkr import dkr
+from kstack.agent import settings
 from kstack.agent.docker.tasks import container_start_task, container_pause_task, container_stop_task, \
     container_delete_task, container_restart_task
+from kstack.agent.server.middleware import docker_service_middleware
 
-container_api_bp = flask.Blueprint('container_api', __name__, url_prefix='/api/containers')
-
+container_api_bp = flask.Blueprint('container_api', __name__, url_prefix='/api/docker/containers')
+docker_service_middleware(container_api_bp)
 
 @container_api_bp.route('', methods=["GET"])
 @jwt_required()
 def list_containers():
     try:
-        containers = dkr.list_containers()
+        containers = g.dkr.list_containers()
         #mapped = list(map(lambda x: x.attrs, containers))
 
         mapped = list()
@@ -30,7 +30,7 @@ def list_containers():
 @jwt_required()
 def describe_container(key):
     try:
-        return jsonify(dkr.get_container(key).attrs)
+        return jsonify(g.dkr.get_container(key).attrs)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -43,7 +43,7 @@ def start_container(key):
             task = container_start_task.apply_async(args=[key])
             return jsonify({"task_id": task.id, "ref": f"/docker/containers/{key}"})
 
-        container = dkr.start_container(key)
+        container = g.dkr.start_container(key)
         return jsonify(container.attrs)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -57,7 +57,7 @@ def pause_container(key):
             task = container_pause_task.apply_async(args=[key])
             return jsonify({"task_id": task.id, "ref": f"/docker/containers/{key}"})
 
-        container = dkr.pause_container(key)
+        container = g.dkr.pause_container(key)
         return jsonify(container.attrs)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -71,7 +71,7 @@ def stop_container(key):
             task = container_stop_task.apply_async(args=[key])
             return jsonify({"task_id": task.id, "ref": f"/docker/containers/{key}"})
 
-        container = dkr.stop_container(key)
+        container = g.dkr.stop_container(key)
         return jsonify(container.attrs)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -88,7 +88,7 @@ def remove_container(key):
             task = container_delete_task.apply_async(args=[key])
             return jsonify({"task_id": task.id, "ref": f"/docker/containers/{key}"})
 
-        container = dkr.remove_container(key)
+        container = g.dkr.remove_container(key)
         return jsonify(container.attrs)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -102,7 +102,7 @@ def restart_container(key):
             task = container_restart_task.apply_async(args=[key])
             return jsonify({"task_id": task.id, "ref": f"/docker/containers/{key}"})
 
-        container = dkr.restart_container(key)
+        container = g.dkr.restart_container(key)
         return jsonify(container.attrs)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -112,7 +112,7 @@ def restart_container(key):
 @jwt_required()
 def get_container_logs(key):
     try:
-        logs = dkr.get_container_logs(key)
+        logs = g.dkr.get_container_logs(key)
         return jsonify(logs)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -123,7 +123,7 @@ def get_container_logs(key):
 def exec_container_command(key):
     command = request.json["command"]
     try:
-        result = dkr.exec_container_cmd(key, command)
+        result = g.dkr.exec_container_cmd(key, command)
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -138,7 +138,7 @@ def create_container():
     run_data["detach"] = True
 
     try:
-        container = dkr.create_container(image, **run_data)
+        container = g.dkr.create_container(image, **run_data)
         return jsonify(container.attrs)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -153,7 +153,7 @@ def run_container():
     run_data["detach"] = True
 
     try:
-        container = dkr.run_container(image, **run_data)
+        container = g.dkr.run_container(image, **run_data)
         return jsonify(container.attrs)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -162,5 +162,5 @@ def run_container():
 
 # @container_api_bp.route('/containers/restart', methods=["POST"])
 # def restart_all_containers():
-#     return jsonify(dkr.restart_all_containers())
+#     return jsonify(g.dkr.restart_all_containers())
 

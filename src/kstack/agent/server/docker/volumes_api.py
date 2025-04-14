@@ -1,11 +1,11 @@
 import flask
-from flask import jsonify
+from flask import jsonify, g
 from flask_jwt_extended.view_decorators import jwt_required
 
-from kstack.agent.docker.dkr import dkr
+from kstack.agent.server.middleware import docker_service_middleware
 
-volumes_api_bp = flask.Blueprint('volumes_api', __name__, url_prefix='/api/volumes')
-
+volumes_api_bp = flask.Blueprint('volumes_api', __name__, url_prefix='/api/docker/volumes')
+docker_service_middleware(volumes_api_bp)
 
 @volumes_api_bp.route('', methods=["GET"])
 @jwt_required()
@@ -23,6 +23,6 @@ def list_volumes():
     check_size = query.get('size', 'false') == 'true'
     check_in_use = query.get('in_use', 'false') == 'true'
 
-    volumes = dkr.list_volumes(check_in_use=check_in_use, check_size=check_size)
+    volumes = g.dkr.list_volumes(check_in_use=check_in_use, check_size=check_size)
     mapped = list(map(lambda x: x.attrs, volumes))
     return jsonify(mapped)
