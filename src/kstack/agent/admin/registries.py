@@ -2,7 +2,7 @@ import os
 import json
 
 from kstack.agent import settings
-from kstack.agent.docker.dkr import dkr
+from kstack.agent.docker.dkr import get_docker_manager_cached
 from kstack.agent.settings import DEFAULT_CONTAINER_REGISTRIES
 from kstack.agent.util.aws_util import aws_ecr_login
 from kstack.agent.util.docker_utils import dockercli_login_ecr_with_awscli
@@ -118,10 +118,11 @@ def delete_container_registry(registry_name: str) -> list:
     return new_registries
 
 
-def request_container_registry_login(registry_name: str) -> bool:
+def request_container_registry_login(ctx_id: str, registry_name: str) -> bool:
     """
     Request a login to a container registry.
 
+    :param ctx_id: Context ID for the Docker manager
     :param registry_name: Name of the container registry
     :return: Response from the container registry
     """
@@ -171,6 +172,7 @@ def request_container_registry_login(registry_name: str) -> bool:
 
     # Generic Docker registry login
     print(f"Logging in to Docker at {url} with {username}", flush=True)
+    dkr = get_docker_manager_cached(ctx_id)
     if dkr.registry_login(url, username, password):
         return True
 

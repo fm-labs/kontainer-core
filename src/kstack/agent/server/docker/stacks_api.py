@@ -4,8 +4,9 @@ from flask_jwt_extended.view_decorators import jwt_required
 
 from kstack.agent.server.middleware import docker_service_middleware
 from kstack.agent.stacks.docker import DockerComposeStack
-from kstack.agent.stacks.stacksmanager import StacksManager
-from kstack.agent.stacks.tasks import stack_start_task, stack_stop_task, stack_destroy_task, stack_restart_task, create_stack_task, \
+from kstack.agent.stacks.stacksmanager import get_stacks_manager
+from kstack.agent.stacks.tasks import stack_start_task, stack_stop_task, stack_destroy_task, stack_restart_task, \
+    create_stack_task, \
     stack_delete_task, stack_sync_task
 
 stacks_api_bp = flask.Blueprint('stacks_api', __name__, url_prefix='/api/stacks')
@@ -16,8 +17,10 @@ docker_service_middleware(stacks_api_bp)
 @jwt_required()
 def list_stacks():
     # time_start = time.time()
-    StacksManager.enumerate()
-    stacks = list(StacksManager.list_all())
+    ctx_id = g.dkr_ctx_id
+    stacks_manager = get_stacks_manager(ctx_id=ctx_id)
+    stacks_manager.enumerate()
+    stacks = list(stacks_manager.list_all())
     managed_names = [s.name for s in stacks]
     # print(f"Enumerated stacks in {time.time() - time_start} seconds")
 
@@ -39,7 +42,7 @@ def list_stacks():
         if active_stack_name is None:
             continue
         if active_stack_name not in managed_names:
-            stack = DockerComposeStack(active_stack_name, managed=False)
+            stack = DockerComposeStack(active_stack_name, ctx_id=ctx_id, managed=False)
             stacks.append(stack)
 
     def _map_managed_stack(_stack):
@@ -56,58 +59,64 @@ def list_stacks():
 @stacks_api_bp.route('/<string:name>/start', methods=["POST"])
 @jwt_required()
 def start_stack(name):
+    ctx_id = g.dkr_ctx_id
     if request.args.get('sync', None) == "1":
-        result = stack_start_task(name)
+        result = stack_start_task(ctx_id, name)
     else:
-        task = stack_start_task.apply_async(args=[name])
-        result = {"task_id": task.id, "ref": f"/docker/{name}"}
+        ctx_id = g.dkr_ctx_id
+        task = stack_start_task.apply_async(args=[ctx_id, name])
+        result = {"task_id": task.id, "ref": f"/docker/{name}", "ctx_id": ctx_id}
     return jsonify(result)
 
 
 @stacks_api_bp.route('/<string:name>/stop', methods=["POST"])
 @jwt_required()
 def stop_stack(name):
+    ctx_id = g.dkr_ctx_id
     # return jsonify(StacksManager.stop(name).serialize())
     if request.args.get('sync', None) == "1":
-        result = stack_stop_task(name)
+        result = stack_stop_task(ctx_id, name)
     else:
-        task = stack_stop_task.apply_async(args=[name])
-        result = {"task_id": task.id, "ref": f"/docker/{name}"}
+        task = stack_stop_task.apply_async(args=[ctx_id, name])
+        result = {"task_id": task.id, "ref": f"/docker/{name}", "ctx_id": ctx_id}
     return jsonify(result)
 
 
 @stacks_api_bp.route('/<string:name>/delete', methods=["POST"])
 @jwt_required()
 def delete_stack(name):
+    ctx_id = g.dkr_ctx_id
     # return jsonify(StacksManager.remove(name).serialize())
     if request.args.get('sync', None) == "1":
-        result = stack_delete_task(name)
+        result = stack_delete_task(ctx_id, name)
     else:
-        task = stack_delete_task.apply_async(args=[name])
-        result = {"task_id": task.id, "ref": f"/docker/{name}"}
+        task = stack_delete_task.apply_async(args=[ctx_id, name])
+        result = {"task_id": task.id, "ref": f"/docker/{name}", "ctx_id": ctx_id}
     return jsonify(result)
 
 
 @stacks_api_bp.route('/<string:name>/destroy', methods=["POST"])
 @jwt_required()
 def destroy_stack(name):
+    ctx_id = g.dkr_ctx_id
     # return jsonify(StacksManager.remove(name).serialize())
     if request.args.get('sync', None) == "1":
-        result = stack_destroy_task(name)
+        result = stack_destroy_task(ctx_id, name)
     else:
-        task = stack_destroy_task.apply_async(args=[name])
-        result = {"task_id": task.id, "ref": f"/docker/{name}"}
+        task = stack_destroy_task.apply_async(args=[ctx_id, name])
+        result = {"task_id": task.id, "ref": f"/docker/{name}", "ctx_id": ctx_id}
     return jsonify(result)
 
 
 @stacks_api_bp.route('/<string:name>/sync', methods=["POST"])
 @jwt_required()
 def sync_stack(name):
+    ctx_id = g.dkr_ctx_id
     if request.args.get('sync', None) == "1":
-        result = stack_sync_task(name)
+        result = stack_sync_task(ctx_id, name)
     else:
-        task = stack_sync_task.apply_async(args=[name])
-        result = {"task_id": task.id, "ref": f"/docker/{name}"}
+        task = stack_sync_task.apply_async(args=[ctx_id, name])
+        result = {"task_id": task.id, "ref": f"/docker/{name}", "ctx_id": ctx_id}
     return jsonify(result)
 
 
@@ -116,18 +125,21 @@ def sync_stack(name):
 def describe_stack(name):
     # Managed
     # First check if the stack is managed
-    stack = StacksManager.get_or_unmanaged(name)
+    ctx_id = g.dkr_ctx_id
+    stacks_manager = get_stacks_manager(ctx_id=ctx_id)
+    stack = stacks_manager.get_or_unmanaged(name)
     return jsonify(stack.serialize())
 
 
 @stacks_api_bp.route('/<string:name>/restart', methods=["POST"])
 @jwt_required()
 def restart_stack(name):
+    ctx_id = g.dkr_ctx_id
     # return jsonify(StacksManager.restart(name).serialize())
     if request.args.get('sync', None) == "1":
-        result = stack_restart_task(name)
+        result = stack_restart_task(ctx_id, name)
     else:
-        task = stack_restart_task.apply_async(args=[name])
+        task = stack_restart_task.apply_async(args=[ctx_id, name])
         result = {"task_id": task.id, "ref": f"/docker/{name}"}
     return jsonify(result)
 
@@ -136,6 +148,7 @@ def restart_stack(name):
 @jwt_required()
 def create_stack():
     request_json = flask.request.json
+    ctx_id = g.dkr_ctx_id
 
     try:
         stack_name = request_json.get("stack_name", "").strip()
@@ -143,7 +156,10 @@ def create_stack():
             raise ValueError("stack_name is required")
         del request_json["stack_name"]
 
-        if StacksManager.get(stack_name) is not None:
+        stacks_manager = get_stacks_manager(ctx_id=ctx_id)
+        if stacks_manager is None:
+            raise ValueError("StacksManager not found")
+        if stacks_manager.get(stack_name) is not None:
             raise ValueError(f"Stack {stack_name} already exists")
 
         initializer_name = request_json.get("launcher", "").strip()
@@ -153,9 +169,9 @@ def create_stack():
 
         # stack = StacksManager.create_stack(stack_name, initializer_name, **request_json)
         if request.args.get('sync', None) == "1":
-            result = create_stack_task(stack_name, initializer_name, **request_json)
+            result = create_stack_task(ctx_id, stack_name, initializer_name, **request_json)
         else:
-            task = create_stack_task.apply_async(args=[stack_name, initializer_name], kwargs=request_json)
+            task = create_stack_task.apply_async(args=[ctx_id, stack_name, initializer_name], kwargs=request_json)
             result = {"task_id": task.id, "ref": f"/docker/{stack_name}"}
         return jsonify(result)
     except Exception as e:

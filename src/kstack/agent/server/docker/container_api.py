@@ -40,7 +40,8 @@ def describe_container(key):
 def start_container(key):
     try:
         if request.args.get('async', None) == "1":
-            task = container_start_task.apply_async(args=[key])
+            ctx_id = g.dkr_ctx_id
+            task = container_start_task.apply_async(args=[ctx_id, key])
             return jsonify({"task_id": task.id, "ref": f"/docker/containers/{key}"})
 
         container = g.dkr.start_container(key)
@@ -54,7 +55,8 @@ def start_container(key):
 def pause_container(key):
     try:
         if request.args.get('async', None) == "1":
-            task = container_pause_task.apply_async(args=[key])
+            ctx_id = g.dkr_ctx_id
+            task = container_pause_task.apply_async(args=[ctx_id, key])
             return jsonify({"task_id": task.id, "ref": f"/docker/containers/{key}"})
 
         container = g.dkr.pause_container(key)
@@ -68,7 +70,8 @@ def pause_container(key):
 def stop_container(key):
     try:
         if request.args.get('async', None) == "1":
-            task = container_stop_task.apply_async(args=[key])
+            ctx_id = g.dkr_ctx_id
+            task = container_stop_task.apply_async(args=[ctx_id, key])
             return jsonify({"task_id": task.id, "ref": f"/docker/containers/{key}"})
 
         container = g.dkr.stop_container(key)
@@ -85,7 +88,8 @@ def remove_container(key):
 
     try:
         if request.args.get('async', None) == "1":
-            task = container_delete_task.apply_async(args=[key])
+            ctx_id = g.dkr_ctx_id
+            task = container_delete_task.apply_async(args=[ctx_id, key])
             return jsonify({"task_id": task.id, "ref": f"/docker/containers/{key}"})
 
         container = g.dkr.remove_container(key)
@@ -99,7 +103,8 @@ def remove_container(key):
 def restart_container(key):
     try:
         if request.args.get('async', None) == "1":
-            task = container_restart_task.apply_async(args=[key])
+            ctx_id = g.dkr_ctx_id
+            task = container_restart_task.apply_async(args=[ctx_id, key])
             return jsonify({"task_id": task.id, "ref": f"/docker/containers/{key}"})
 
         container = g.dkr.restart_container(key)

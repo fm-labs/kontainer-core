@@ -86,4 +86,5 @@ def docker_service_middleware(app):
         #     # abort(400, description="Invalid X-Docker-Context: must be an integer")
         #     return jsonify({"error": "Invalid X-Docker-Context: must be an integer"}), 400
 
+        g.dkr_ctx_id = docker_ctxid
         g.dkr = DockerService(docker_ctxid).dkr

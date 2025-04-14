@@ -15,7 +15,7 @@ REPOS_DIR = f"{DATA_DIR}/repos"
 KEYS_DIR = f"{DATA_DIR}/keys"
 
 
-def _init_docker_compose_stack(stack_name: str, meta=None, exists_ok=False, make_dirs=False) -> DockerComposeStack:
+def _init_docker_compose_stack(ctx_id: str, stack_name: str, meta=None, exists_ok=False, make_dirs=False) -> DockerComposeStack:
     """
     Initialize a stack.
     Write the metadata to the stack directory.
@@ -37,7 +37,7 @@ def _init_docker_compose_stack(stack_name: str, meta=None, exists_ok=False, make
     meta["repository"] = meta.get("repository", dict())
     meta["_created"] = int(time.time())
 
-    stack = DockerComposeStack(stack_name, meta=meta, managed=True)
+    stack = DockerComposeStack(stack_name, ctx_id=ctx_id, meta=meta, managed=True)
 
     # check/create the stack directory
     if make_dirs:
@@ -51,7 +51,7 @@ def _init_docker_compose_stack(stack_name: str, meta=None, exists_ok=False, make
     return stack
 
 
-def stack_from_scratch(stack_name, **kwargs):
+def stack_from_scratch(ctx_id, stack_name, **kwargs):
     """
     Create a stack from scratch
     """
@@ -60,7 +60,7 @@ def stack_from_scratch(stack_name, **kwargs):
         raise ValueError("No content provided")
 
     meta = {}
-    stack = _init_docker_compose_stack(stack_name, meta=meta)
+    stack = _init_docker_compose_stack(ctx_id, stack_name, meta=meta)
 
     # Write the content to the stack directory
     compose_file = os.path.join(stack.project_dir, "docker-compose.yml")
@@ -70,7 +70,7 @@ def stack_from_scratch(stack_name, **kwargs):
     return stack
 
 
-def stack_from_template(stack_name, **kwargs):
+def stack_from_template(ctx_id, stack_name, **kwargs):
     content = kwargs.get("template_content")
     if content is None:
         raise ValueError("No content provided")
@@ -82,12 +82,12 @@ def stack_from_template(stack_name, **kwargs):
     # @todo parse and validate the template
 
     meta = template
-    stack = _init_docker_compose_stack(stack_name, meta=meta)
+    stack = _init_docker_compose_stack(ctx_id, stack_name, meta=meta)
     return stack
 
 
 
-def stack_from_compose_url(stack_name, **kwargs):
+def stack_from_compose_url(ctx_id, stack_name, **kwargs):
     url = kwargs.get("compose_url")
     if url is None:
         raise ValueError("URL not provided")
@@ -95,7 +95,7 @@ def stack_from_compose_url(stack_name, **kwargs):
     meta = {
         "compose_url": url
     }
-    stack = _init_docker_compose_stack(stack_name, meta=meta)
+    stack = _init_docker_compose_stack(ctx_id, stack_name, meta=meta)
 
     # download the file from the url and build the stack
     with requests.get(url) as r:
@@ -111,7 +111,7 @@ def stack_from_compose_url(stack_name, **kwargs):
     return stack
 
 
-def stack_from_gitrepo(stack_name, **kwargs):
+def stack_from_gitrepo(ctx_id, stack_name, **kwargs):
     repo_url = kwargs.get("repo_url")
     base_path = kwargs.get("base_path", "")
     repo_ref = kwargs.get("repo_ref", "/ref/heads/main")
@@ -151,7 +151,7 @@ def stack_from_gitrepo(stack_name, **kwargs):
         "base_path": base_path,
         "repository": repo
     }
-    stack = _init_docker_compose_stack(stack_name, meta=meta, make_dirs=False)
+    stack = _init_docker_compose_stack(ctx_id, stack_name, meta=meta, make_dirs=False)
 
     # Clone the repository
     try:
@@ -168,7 +168,7 @@ def stack_from_gitrepo(stack_name, **kwargs):
     return stack
 
 
-def stack_from_template_repo(stack_name, repo_url=None, template_name=None, parameters=None, **kwargs):
+def stack_from_template_repo(ctx_id, stack_name, repo_url=None, template_name=None, parameters=None, **kwargs):
     if repo_url is None:
         raise ValueError("URL not provided")
     if template_name is None:
@@ -190,7 +190,7 @@ def stack_from_template_repo(stack_name, repo_url=None, template_name=None, para
     return stack_from_template_dir(stack_name, template_dir, parameters)
 
 
-def stack_from_template_dir(stack_name, template_dir=None, parameters=None):
+def stack_from_template_dir(ctx_id, stack_name, template_dir=None, parameters=None):
     """
     Launch a stack from a template
 
@@ -215,7 +215,7 @@ def stack_from_template_dir(stack_name, template_dir=None, parameters=None):
     if not os.path.exists(template_dir):
         raise ValueError(f"Template not found at {template_dir}")
 
-    stack = _init_docker_compose_stack(stack_name)
+    stack = _init_docker_compose_stack(ctx_id, stack_name)
     stack_base_dir = stack.project_dir
 
     for root, dirs, files in os.walk(template_dir):
@@ -234,7 +234,7 @@ def stack_from_template_dir(stack_name, template_dir=None, parameters=None):
     return stack
 
 
-def stack_from_portainer_template(stack, template_url=None, template_name=None, **kwargs):
+def stack_from_portainer_template(ctx_id, stack_name, template_url=None, template_name=None, **kwargs):
     if template_url is None:
         raise ValueError("Templates URL not provided")
     if template_name is None:

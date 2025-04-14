@@ -5,15 +5,19 @@ import subprocess
 from docker.constants import DEFAULT_TIMEOUT_SECONDS
 
 from kstack.agent import settings
-from kstack.agent.docker.dkr import dkr
+from kstack.agent.docker.context import get_dockerhost_for_ctx_id
+from kstack.agent.docker.dkr import get_docker_manager_cached
 from kstack.agent.stacks import ContainerStack
 from kstack.agent.util.subprocess_util import kwargs_to_cmdargs, load_envfile
 
 
 class DockerComposeStack(ContainerStack):
 
-    def __init__(self, name, managed=False, meta=None, **kwargs):
+    def __init__(self, name, ctx_id, managed=False, meta=None, **kwargs):
         super().__init__(name, managed=managed, meta=meta)
+
+        self.ctx_id = ctx_id
+        self._dkr = get_docker_manager_cached(ctx_id)
 
 
     def _compose(self, cmd, **kwargs) -> bytes:
@@ -23,6 +27,9 @@ class DockerComposeStack(ContainerStack):
         :param kwargs: Additional arguments to pass to docker compose
         :return:
         """
+        if self.ctx_id != "local":
+            raise Exception(f"Context id {self.ctx_id} not supported for docker compose")
+
         if self.project_dir is None or not self.exists():
             return b"Stack does not exist"
 
@@ -55,6 +62,7 @@ class DockerComposeStack(ContainerStack):
             # penv = os.environ.copy()
             penv = dict()
             penv['PATH'] = os.getenv('PATH')
+            #todo penv['DOCKER_HOST'] = 'unix:///var/run/docker.sock'
             penv['DOCKER_CONFIG'] = settings.DOCKER_CONFIG
             penv['COMPOSE_PROJECT_DIRECTORY'] = working_dir
             penv['COMPOSE_PROJECT_NAME'] = self.name
@@ -177,15 +185,15 @@ class DockerComposeStack(ContainerStack):
 
 
 class UnmanagedDockerComposeStack(DockerComposeStack):
-    def __init__(self, name, meta=None, **kwargs):
-        super().__init__(name, managed=False, meta=meta)
+    def __init__(self, name, ctx_id, meta=None, **kwargs):
+        super().__init__(name, ctx_id, managed=False, meta=meta)
 
         self.name = name
         self.managed = False
         self._meta = meta  # will always be None
 
-        if dkr.stack_exists(name):
-            project_dir = dkr.get_stack_project_dir(name)
+        if self._dkr.stack_exists(name):
+            project_dir = self._dkr.get_stack_project_dir(name)
             self.project_dir = project_dir
             self.project_file = None
 
@@ -202,11 +210,11 @@ class UnmanagedDockerComposeStack(DockerComposeStack):
         If the stack is managed outside the agent, then only already created containers will be started.
         """
         out = b""
-        containers: list = dkr.list_stack_containers(self.name)
+        containers: list = self._dkr.list_stack_containers(self.name)
         for container in containers:
             try:
                 out += f"Starting container {container.id}\n".encode("utf-8")
-                dkr.start_container(container.id)
+                self._dkr.start_container(container.id)
             except Exception as e:
                 print(f"Error starting container {container.id}: {e}")
                 out += f"Error starting container {container.id}: {e}\n".encode("utf-8")
@@ -220,11 +228,11 @@ class UnmanagedDockerComposeStack(DockerComposeStack):
         If the stack is managed outside the agent, then just restart the containers
         """
         out = b""
-        containers: list = dkr.list_stack_containers(self.name)
+        containers: list = self._dkr.list_stack_containers(self.name)
         for container in containers:
             try:
                 out += f"Restarting container {container.id}\n".encode("utf-8")
-                dkr.restart_container(container.id)
+                self._dkr.restart_container(container.id)
             except Exception as e:
                 print(f"Error restarting container {container.id}: {e}")
                 out += f"Error restarting container {container.id}: {e}\n".encode("utf-8")
@@ -238,11 +246,11 @@ class UnmanagedDockerComposeStack(DockerComposeStack):
         If the stack is managed outside the agent, then just stop the containers
         """
         out = b""
-        containers: list = dkr.list_stack_containers(self.name)
+        containers: list = self._dkr.list_stack_containers(self.name)
         for container in containers:
             try:
                 out += f"Stopping container {container.id}\n".encode("utf-8")
-                dkr.stop_container(container.id)
+                self._dkr.stop_container(container.id)
             except Exception as e:
                 print(f"Error stopping container {container.id}: {e}")
                 out += f"Error stopping container {container.id}: {e}\n".encode("utf-8")
@@ -270,11 +278,11 @@ class UnmanagedDockerComposeStack(DockerComposeStack):
         The stack will disappear after all containers are removed.
         """
         out = b""
-        containers: list = dkr.list_stack_containers(self.name)
+        containers: list = self._dkr.list_stack_containers(self.name)
         for container in containers:
             try:
                 out += f"Removing container {container.id}\n".encode("utf-8")
-                dkr.remove_container(container.id)
+                self._dkr.remove_container(container.id)
             except Exception as e:
                 print(f"Error removing container {container.id}: {e}")
                 out += f"Error removing container {container.id}: {e}\n".encode("utf-8")

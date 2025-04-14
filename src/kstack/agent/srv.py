@@ -17,10 +17,6 @@ from kstack.agent.server.docker.volumes_api import volumes_api_bp
 #from .server.kube_namespaces_api import kube_namespaces_api_bp
 #from .server.kube_pods_api import kube_pods_api_bp
 
-from .stacks.stacksmanager import StacksManager
-
-StacksManager.enumerate()
-
 @app.route('/', methods=["GET"])
 def index():
     status_data = {

@@ -4,7 +4,7 @@ from kstack.agent.util.settings_util import get_or_create_jwt_secret
 
 
 # Docker settings
-DOCKER_HOST = os.getenv("DOCKER_HOST", "unix:///var/run/docker.sock")
+#DOCKER_HOST = os.getenv("DOCKER_HOST", "unix:///var/run/docker.sock")
 #DOCKER_CONFIG = os.getenv("DOCKER_CONFIG", ".docker/config.json")
 DOCKER_CONFIG = os.getenv("DOCKER_CONFIG")
 

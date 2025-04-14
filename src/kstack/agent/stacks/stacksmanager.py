@@ -2,8 +2,6 @@ import os
 import shutil
 from typing import Union
 
-from docker.constants import DEFAULT_TIMEOUT_SECONDS
-
 from . import ContainerStack
 from .initializer import stack_from_portainer_template, stack_from_gitrepo, \
     stack_from_compose_url, stack_from_scratch, stack_from_template_repo, stack_from_template
@@ -19,8 +17,23 @@ from ..settings import AGENT_DATA_DIR
 # if they have both, load the stack from the stack.json file and update it with the docker-compose.yml file
 # if they have neither, ignore the directory
 
+stack_manager_cache = {}
+
+def get_stacks_manager(ctx_id):
+    """
+    Get the stack manager for the given context id
+    :param ctx_id: context id
+    :return: stack manager
+    """
+    if ctx_id in stack_manager_cache:
+        return stack_manager_cache[ctx_id]
+
+    stack_manager = StacksManager(ctx_id)
+    stack_manager_cache[ctx_id] = stack_manager
+    return stack_manager
+
+
 class StacksManager:
-    stacks = {}
 
     # register the default initializers
     initializers = {
@@ -36,8 +49,13 @@ class StacksManager:
         #"svn": stack_from_svnrepo,
     }
 
-    @classmethod
-    def enumerate(cls):
+    def __init__(self, ctx_id):
+        self.ctx_id = ctx_id
+        self.stacks = {}
+        self.enumerate()
+
+
+    def enumerate(self):
         """
         Init stack manager
         scan for directories in DOCKER_PROJECTS_DIR and check if they have a stack.json or a docker-compose.yml file
@@ -46,126 +64,129 @@ class StacksManager:
         if they have both, load the stack from the stack.json file and update it with the docker-compose.yml file
         if they have neither, ignore the directory
         """
-        cls.stacks = {}
-        stacks_dir = os.path.join(AGENT_DATA_DIR, 'stacks')
-        os.makedirs(stacks_dir, exist_ok=True)
-        for file in os.listdir(stacks_dir):
-            file_path = os.path.join(stacks_dir, file)
-            if os.path.isdir(file_path):
-                docker_compose = os.path.join(file_path, "docker-compose.yml")
-                if os.path.exists(docker_compose):
-                    stack = DockerComposeStack(file, managed=True)
-                    cls.add(stack)
-                    print(f"Added from dir {stack.name}")
-                else:
-                    print(f"Skipping {file_path}")
-            elif os.path.isfile(file_path) and file.endswith(".stack.json"):
-                stack_name = file.replace(".stack.json", "")
-                stack = DockerComposeStack(stack_name, managed=True)
-                cls.add(stack)
-                print(f"Added from Json {stack.name}")
+        self.stacks = {}
+
+        if self.ctx_id == "local":
+            stacks_dir = os.path.join(AGENT_DATA_DIR, 'stacks')
+            os.makedirs(stacks_dir, exist_ok=True)
+            for file in os.listdir(stacks_dir):
+                file_path = os.path.join(stacks_dir, file)
+                if os.path.isdir(file_path):
+                    docker_compose = os.path.join(file_path, "docker-compose.yml")
+                    if os.path.exists(docker_compose):
+                        stack = DockerComposeStack(file, ctx_id=self.ctx_id, managed=True)
+                        self.add(stack)
+                        print(f"Added from dir {stack.name}")
+                    else:
+                        print(f"Skipping {file_path}")
+                elif os.path.isfile(file_path) and file.endswith(".stack.json"):
+                    stack_name = file.replace(".stack.json", "")
+                    stack = DockerComposeStack(stack_name, ctx_id=self.ctx_id, managed=True)
+                    self.add(stack)
+                    print(f"Added from Json {stack.name}")
 
 
-    @classmethod
-    def register_initializer(cls, initializer_name, initializer):
-        cls.initializers[initializer_name] = initializer
+    
+    def register_initializer(self, initializer_name, initializer):
+        self.initializers[initializer_name] = initializer
 
 
-    @classmethod
-    def deregister_initializer(cls, initializer_name):
-        del cls.initializers[initializer_name]
+    
+    def deregister_initializer(self, initializer_name):
+        del self.initializers[initializer_name]
 
 
-    @classmethod
-    def init_stack(cls, name, initializer_name=None, **kwargs):
-        if cls.get(name) is not None:
+    
+    def init_stack(self, name, initializer_name=None, **kwargs):
+        if self.get(name) is not None:
             raise ValueError(f"Stack {name} already exists")
 
-        initializer = cls.initializers.get(initializer_name)
+        initializer = self.initializers.get(initializer_name)
         if initializer is None:
             raise ValueError(f"Initializer not registered: {initializer_name}")
 
-        stack = initializer(name, **kwargs)
-        cls.add(stack)
+        ctx_id = self.ctx_id
+        stack = initializer(ctx_id, name, **kwargs)
+        self.add(stack)
         return stack
 
     # MANAGE STACKS
 
-    @classmethod
-    def list_all(cls):
-        return cls.stacks.values()
+    
+    def list_all(self):
+        return self.stacks.values()
 
 
-    @classmethod
-    def add(cls, stack) -> None:
-        if stack.name in cls.stacks:
+    
+    def add(self, stack) -> None:
+        if stack.name in self.stacks:
             # raise ValueError(f"Stack {stack.name} already exists")
             return
-        cls.stacks[stack.name] = stack
+        self.stacks[stack.name] = stack
 
 
-    @classmethod
-    def get(cls, name) -> Union[ContainerStack, None]:
-        if name not in cls.stacks:
+    
+    def get(self, name) -> Union[ContainerStack, None]:
+        if name not in self.stacks:
             return None
 
-        stack = cls.stacks[name]
+        stack = self.stacks[name]
         return stack
 
 
-    @classmethod
-    def get_or_unmanaged(cls, name) -> UnmanagedDockerComposeStack | None:
-        stack = cls.get(name)
+    
+    def get_or_unmanaged(self, name) -> UnmanagedDockerComposeStack | None:
+        stack = self.get(name)
         if stack is None:
-            stack = UnmanagedDockerComposeStack(name)
-            cls.add(stack) # Add the unmanaged stack to the manager
+            stack = UnmanagedDockerComposeStack(name, ctx_id=self.ctx_id)
+            self.add(stack) # Add the unmanaged stack to the manager
 
         return stack
 
-    @classmethod
-    def remove(cls, name) -> None:
-        if name not in cls.stacks:
+    
+    def remove(self, name) -> None:
+        if name not in self.stacks:
             raise ValueError(f"Stack {name} not found")
-        stack = cls.stacks[name]
-        del cls.stacks[name]
+        stack = self.stacks[name]
+        del self.stacks[name]
         return stack
 
 
 
     # STACK OPERATIONS
 
-    @classmethod
-    def start(cls, name) -> bytes:
-        # if name not in cls.stacks:
+    
+    def start(self, name) -> bytes:
+        # if name not in self.stacks:
         #     raise ValueError(f"Stack {name} not found")
-        # stack = cls.stacks[name]
-        stack = cls.get_or_unmanaged(name)
+        # stack = self.stacks[name]
+        stack = self.get_or_unmanaged(name)
         return stack.up()
 
 
-    @classmethod
-    def restart(cls, name) -> bytes:
-        stack = cls.get_or_unmanaged(name)
+    
+    def restart(self, name) -> bytes:
+        stack = self.get_or_unmanaged(name)
         return stack.restart()
 
 
-    @classmethod
-    def stop(cls, name) -> bytes:
-        stack = cls.get_or_unmanaged(name)
+    
+    def stop(self, name) -> bytes:
+        stack = self.get_or_unmanaged(name)
         return stack.stop()
 
 
-    @classmethod
-    def delete(cls, name) -> bytes:
-        stack = cls.get_or_unmanaged(name)
+    
+    def delete(self, name) -> bytes:
+        stack = self.get_or_unmanaged(name)
         return stack.down()
 
 
-    @classmethod
-    def destroy(cls, name, **kwargs) -> bytes:
+    
+    def destroy(self, name, **kwargs) -> bytes:
         #kwargs['timeout'] = DEFAULT_TIMEOUT_SECONDS if 'timeout' not in kwargs else kwargs['timeout']
         out = b""
-        stack = cls.get_or_unmanaged(name)
+        stack = self.get_or_unmanaged(name)
 
         # Try bringing the stack down first
         try:
@@ -190,24 +211,27 @@ class StacksManager:
             out += bytes(f"\n\nDeleted project file {stack.project_file}", 'utf-8')
 
         # Remove the stack from the manager
-        if name in cls.stacks:
-            del cls.stacks[name]
+        if name in self.stacks:
+            del self.stacks[name]
 
         return out
 
 
-    @classmethod
-    def sync(cls, name) -> bytes:
-        #if name not in cls.stacks:
+    
+    def sync(self, name) -> bytes:
+        if self.ctx_id != "local":
+            raise ValueError("Sync is only supported for local stacks")
+
+        #if name not in self.stacks:
         #    raise ValueError(f"Stack {name} not found")
 
         # Refresh the list of stacks
         # @todo find a better way to do this
-        StacksManager.enumerate()
+        self.enumerate()
 
-        stack = cls.get_or_unmanaged(name)
+        stack = self.get_or_unmanaged(name)
         if stack is None or isinstance(stack, UnmanagedDockerComposeStack):
             raise ValueError(f"Cannot sync unmanaged stack {name}")
 
-        # stack = cls.stacks[name]
+        # stack = self.stacks[name]
         return sync_stack(stack)

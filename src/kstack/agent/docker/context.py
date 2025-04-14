@@ -29,8 +29,8 @@ def get_dockerhost_for_ctx_id(ctx_id):
                 docker_host = env["host"]
                 break
 
-        if docker_host is None:
-            raise Exception(f"Context id {ctx_id} not found")
+        #if docker_host is None:
+        #    raise Exception(f"Context id {ctx_id} not found")
 
     return docker_host
 
