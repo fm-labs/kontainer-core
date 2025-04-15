@@ -125,7 +125,7 @@ case $1 in
     export PYTHONPATH=/app/src:$PYTHONPATH
     export DEBUG=true
 
-    exec python3 /app/kontainer.py
+    exec python3 /app/main.py
     ;;
 
 

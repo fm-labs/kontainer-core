@@ -4,10 +4,10 @@ import flask
 from flask import jsonify, request
 from flask_jwt_extended.view_decorators import jwt_required
 
-from kontainer.app import app
-from kontainer.admin.credentials import private_key_exists, write_private_key, delete_private_key, find_private_keys
-from kontainer.admin.registries import update_container_registry, delete_container_registry, \
-    list_container_registries, request_container_registry_login
+from kontainer.admin.credentials import find_private_keys, write_private_key, private_key_exists, delete_private_key
+from kontainer.admin.registries import list_container_registries, update_container_registry, \
+    request_container_registry_login, delete_container_registry
+
 
 admin_api_bp = flask.Blueprint('admin_api', __name__, url_prefix='/api/admin')
 
@@ -41,7 +41,7 @@ def container_registries_update(registry_name):
 @jwt_required()
 def container_registry_login(registry_name):
     try:
-        app.logger.info(f"Requesting login for {registry_name}")
+        #app.logger.info(f"Requesting login for {registry_name}")
         success = request_container_registry_login(registry_name)
         if not success:
             return jsonify({'error': 'Login failed'}), 401

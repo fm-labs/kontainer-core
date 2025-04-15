@@ -1,9 +1,8 @@
 import sys
-
 sys.path.append("./src")
 
-from kontainer.srv import app # ! Importing from 'srv' module not 'app' module !
 from kontainer import settings
+from kontainer.srv import app # ! Importing from 'srv' module not 'app' module !
 
 # Make sure all tasks are imported, so that Celery can find them
 from kontainer.celery import celery

@@ -5,7 +5,6 @@ import subprocess
 from docker.constants import DEFAULT_TIMEOUT_SECONDS
 
 from kontainer import settings
-from kontainer.docker.context import get_dockerhost_for_ctx_id
 from kontainer.docker.dkr import get_docker_manager_cached
 from kontainer.stacks import ContainerStack
 from kontainer.util.subprocess_util import kwargs_to_cmdargs, load_envfile

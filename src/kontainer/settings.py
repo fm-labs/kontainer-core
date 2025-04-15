@@ -1,6 +1,6 @@
 import os
 
-from kontainer.util.settings_util import get_or_create_jwt_secret
+from .util.settings_util import get_or_create_jwt_secret
 
 
 # Docker settings

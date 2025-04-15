@@ -16,7 +16,7 @@ docker run \
   -v $PWD/data:/app/data \
   -v $PWD/bin:/app/bin:ro \
   -v $PWD/src:/app/src:ro \
-  -v $PWD/kontainer.py:/app/kontainer.py:ro \
+  -v $PWD/main.py:/app/main.py:ro \
   -v $PWD/celery_worker.sh:/app/celery_worker.sh:ro \
   -p 5000:5000 \
   -p 3080:3080 \

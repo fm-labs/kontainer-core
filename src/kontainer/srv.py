@@ -1,19 +1,19 @@
 from flask import jsonify
 
-from kontainer.app import app
-from kontainer.server.internal.admin_api import admin_api_bp
-from kontainer.server.internal.auth_api import auth_api_bp
+from .app import app
+from .server.internal.admin_api import admin_api_bp
+from .server.internal.auth_api import auth_api_bp
 
-from kontainer.server.docker.engine_api import engine_api_bp
-from kontainer.server.docker.container_api import container_api_bp
-from kontainer.server.internal.environments_api import environments_api_bp
-from kontainer.server.docker.images_api import images_api_bp
-from kontainer.server.docker.networks_api import networks_api_bp
-from kontainer.server.docker.stacks_api import stacks_api_bp
-from kontainer.server.internal.system_api import system_api_bp
-from kontainer.server.internal.tasks_api import tasks_api_bp
-from kontainer.server.internal.templates_api import templates_api_bp
-from kontainer.server.docker.volumes_api import volumes_api_bp
+from .server.docker.engine_api import engine_api_bp
+from .server.docker.container_api import container_api_bp
+from .server.internal.environments_api import environments_api_bp
+from .server.docker.images_api import images_api_bp
+from .server.docker.networks_api import networks_api_bp
+from .server.docker.stacks_api import stacks_api_bp
+from .server.internal.system_api import system_api_bp
+from .server.internal.tasks_api import tasks_api_bp
+from .server.internal.templates_api import templates_api_bp
+from .server.docker.volumes_api import volumes_api_bp
 #from .server.kube_namespaces_api import kube_namespaces_api_bp
 #from .server.kube_pods_api import kube_pods_api_bp
 

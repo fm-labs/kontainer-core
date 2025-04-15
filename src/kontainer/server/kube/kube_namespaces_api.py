@@ -1,7 +1,7 @@
 from flask import jsonify, Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 
-from kontainer.kube.client import get_kube_client
+from .kube.client import get_kube_client
 
 kube_namespaces_api_bp = Blueprint('kube_namespaces_api', __name__, url_prefix='/api/kube')
 

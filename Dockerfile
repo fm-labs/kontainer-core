@@ -43,7 +43,7 @@ RUN pip install poetry \
 
 # Copy the rest of the code
 COPY ./src /app/src
-COPY ./kontainer.py /app/kontainer.py
+COPY ./main.py /app/main.py
 COPY ./celery_worker.sh /app/celery_worker.sh
 
 # Configure Nginx
