@@ -7,6 +7,6 @@ echo "Found celery at: $CELERY"
 sleep 3
 
 echo "Starting celery worker ..."
-$CELERY -A agent.celery worker --loglevel=INFO
+$CELERY -A kontainer.celery worker --loglevel=INFO
 
 echo "Celery worker exited"

@@ -14,7 +14,7 @@ from .server.error_middleware import ErrorMiddleware
 # from .server.middleware import auth_token_middleware
 
 app = Flask(__name__)
-app.logger.info("Initializing KSTACK agent")
+app.logger.info("Initializing kontainer core")
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)

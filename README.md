@@ -33,7 +33,7 @@ Uses [poetry](https://python-poetry.org/) for dependency management.
 ```bash
 poetry install
 export KONTAINER_DATA_DIR=./data
-potry run python ./agent.py
+peotry run python ./kontainer.py
 ```
 
 The kontainer REST api server is served at `http://localhost:5000/` by default.

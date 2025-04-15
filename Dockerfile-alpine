@@ -78,7 +78,7 @@ RUN poetry config virtualenvs.create false \
 # Copy the rest of the code
 COPY ./src /app/src
 COPY ./bin /app/bin
-COPY ./agent.py /app/agent.py
+COPY ./kontainer.py /app/kontainer.py
 COPY ./celery_worker.sh /app/celery_worker.sh
 
 

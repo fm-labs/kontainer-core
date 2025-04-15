@@ -83,7 +83,7 @@ case $1 in
     # export KONTAINER_HOST=0.0.0.0
 
     echo "Starting devserver ..."
-    exec python3 /app/agent.py
+    exec python3 /app/kontainer.py
     ;;
 
   "gunicorn-tcp")
