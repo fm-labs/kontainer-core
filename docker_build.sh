@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-TAGNAME=kstack-agent
+TAGNAME=kontainer-core
 REGISTRY=fmlabs
 
 VERSION=0.0.0

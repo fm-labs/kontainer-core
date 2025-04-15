@@ -1,7 +1,7 @@
 FROM python:3.13-slim
 
-ENV AGENT_HOST=0.0.0.0
-ENV AGENT_PORT=5000
+ENV KONTAINER_HOST=0.0.0.0
+ENV KONTAINER_PORT=5000
 
 # Update package list and install necessary dependencies
 ENV DEBIAN_FRONTEND=noninteractive
@@ -62,9 +62,9 @@ CMD ["devserver"]
 
 # Health check
 HEALTHCHECK --interval=60s --timeout=3s --retries=3 \
- CMD curl --fail http://localhost:${AGENT_PORT}/ || exit 1
+ CMD curl --fail http://localhost:${KONTAINER_PORT}/ || exit 1
 
 
-EXPOSE ${AGENT_PORT}
+EXPOSE ${KONTAINER_PORT}
 EXPOSE 80
 EXPOSE 443

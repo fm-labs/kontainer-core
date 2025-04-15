@@ -1,7 +1,7 @@
 #!/bin/bash
 
-IMAGE_NAME=fmlabs/kstack-agent:latest
-CONTAINER_NAME=kstack-agent
+IMAGE_NAME=fmlabs/kontainer-core:latest
+CONTAINER_NAME=kontainer-core
 
 docker stop ${CONTAINER_NAME}
 docker rm ${CONTAINER_NAME}
@@ -11,9 +11,9 @@ docker run -d \
   --restart always \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   -v /var/lib/docker/volumes:/var/lib/docker/volumes:ro \
-  -v kstack_agent_data:/app/data \
+  -v kontainer_data:/app/data \
   -p 5000:5000 \
-  -e AGENT_HOST=0.0.0.0 \
-  -e AGENT_DATA_DIR=/app/data \
-  -e AGENT_DATA_VOLUME=kstack_agent_data \
+  -e KONTAINER_HOST=0.0.0.0 \
+  -e KONTAINER_DATA_DIR=/app/data \
+  -e KONTAINER_DATA_VOLUME=kontainer_data \
   ${IMAGE_NAME}

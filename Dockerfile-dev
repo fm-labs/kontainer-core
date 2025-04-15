@@ -1,7 +1,7 @@
 FROM python:3.13-slim
 
-#ENV AGENT_HOST=0.0.0.0
-#ENV AGENT_PORT=5000
+#ENV KONTAINER_HOST=0.0.0.0
+#ENV KONTAINER_PORT=5000
 
 # Update package list and install necessary dependencies
 ENV DEBIAN_FRONTEND=noninteractive

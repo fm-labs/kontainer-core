@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "kstack-agent"
-version = "0.8.1"
+name = "kontainer-core"
+version = "0.9.0"
 description = ""
 authors = ["fm-labs <flowmotionlabs@gmail.com>"]
 readme = "README.md"

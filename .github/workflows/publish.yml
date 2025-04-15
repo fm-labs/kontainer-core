@@ -17,7 +17,7 @@ on:
       - "*"
 
 #env:
-#  REPO_NAME: kstack-agent
+#  REPO_NAME: kontainer
 
 jobs:
   publish:

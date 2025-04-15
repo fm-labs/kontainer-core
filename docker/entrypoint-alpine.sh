@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#KUSER=kstack
+#KUSER=kontainer
 
 init_services() {
 
@@ -118,7 +118,7 @@ case $1 in
     init_services
 
     # Allow connections from any host
-    # export AGENT_HOST=0.0.0.0
+    # export KONTAINER_HOST=0.0.0.0
 
     echo "Starting devserver ..."
     export PYTHON_UNBUFFERED=1
@@ -133,7 +133,7 @@ case $1 in
     init_services
 
     # Only allow connections from localhost
-    # export AGENT_HOST=127.0.0.1
+    # export KONTAINER_HOST=127.0.0.1
     export LOG_FILE=/dev/fd/1
     exec /app/bin/gunicorn_tcp.sh
     ;;

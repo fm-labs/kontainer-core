@@ -1,6 +1,6 @@
 #!/bin/bash
 
-KUSER=kstack
+KUSER=kontainer
 
 init_services() {
 
@@ -62,16 +62,16 @@ echo "ID: ${CURRENTUSERID} / ${KUSER_ID}"
 
 export PYTHON_UNBUFFERED=1
 export PYTHONPATH=/app/src:$PYTHONPATH
-export AGENT_DATA_DIR=${AGENT_DATA_DIR:-/app/data}
-export AGENT_HOST=${AGENT_HOST:-0.0.0.0}
-export AGENT_PORT=${AGENT_PORT:-5000}
+export KONTAINER_DATA_DIR=${KONTAINER_DATA_DIR:-/app/data}
+export KONTAINER_HOST=${KONTAINER_HOST:-0.0.0.0}
+export KONTAINER_PORT=${KONTAINER_PORT:-5000}
 
 # Gunicorn settings
-NAME="kstack-agent-api"
+NAME="kontainer-api"
 USER=$(whoami)
 GROUP=$(whoami)
 WSGI_APP=wsgi:app
-NUM_WORKERS=${AGENT_WORKERS:-3}
+NUM_WORKERS=${KONTAINER_WORKERS:-3}
 LOG_LEVEL=${LOG_LEVEL:-info}
 
 case $1 in
@@ -80,7 +80,7 @@ case $1 in
     init_services
 
     # Allow connections from any host
-    # export AGENT_HOST=0.0.0.0
+    # export KONTAINER_HOST=0.0.0.0
 
     echo "Starting devserver ..."
     exec python3 /app/agent.py
@@ -90,10 +90,10 @@ case $1 in
     init_services
 
     # Only allow connections from localhost
-    # export AGENT_HOST=127.0.0.1
+    # export KONTAINER_HOST=127.0.0.1
 
     # BIND=0.0.0.0:5000
-    BIND=${AGENT_HOST}:${AGENT_PORT}
+    BIND=${KONTAINER_HOST}:${KONTAINER_PORT}
     echo "Starting gunicorn (${BIND}) ..."
     exec gunicorn ${WSGI_APP} \
       --name ${NAME} \

@@ -1,29 +1,29 @@
-# kstack-agent
+# kontainer-core
 
-Exposes a REST api for managing docker containers.
+Exposes a REST api for managing multiple docker daemons.
 
 
 ## Quick Start
 
 ```bash
-docker pull fmlabs/kstack-agent:latest
+docker pull fmlabs/kontainer-core:latest
 ```
 
 ```bash
 docker run -d \
-  --name kstack-agent \
+  --name kontainer \
   --restart always \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   -v /var/lib/docker/volumes:/var/lib/docker/volumes:ro \
-  -v kstack_agent_data:/app/data \
+  -v kontainer_data:/app/data \
   -p 5000:5000 \
-  fmlabs/kstack-agent:latest
+  fmlabs/kontainer-core:latest
 ```
 
 
 ```bash
 # Download docker_run.sh from github repository and invoke with bash
-curl -s https://raw.githubusercontent.com/fm-labs/kstack-agent/main/docker_run.sh | bash
+curl -s https://raw.githubusercontent.com/fm-labs/kontainer-core/main/docker_run.sh | bash
 ```
 
 ## Development
@@ -32,11 +32,11 @@ Uses [poetry](https://python-poetry.org/) for dependency management.
 
 ```bash
 poetry install
-export AGENT_DATA_DIR=./data
+export KONTAINER_DATA_DIR=./data
 potry run python ./agent.py
 ```
 
-The kstack-agent REST api server is served at `http://localhost:5000/` by default.
+The kontainer REST api server is served at `http://localhost:5000/` by default.
 
 ## Features
 
@@ -124,4 +124,6 @@ The kstack-agent REST api server is served at `http://localhost:5000/` by defaul
 
 
 **Related projects:**
-- [kstack-ui](https://github.com/fm-labs/kstack-ui) - A web ui for kstack-agent
+- [kontainer](https://github.com/fm-labs/kontainer-ui) - Full kontainer stack with web UI
+- [kontainer-ui](https://github.com/fm-labs/kontainer-ui) - The Web GUI for kontainer
+

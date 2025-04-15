@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DEV_CONTAINER_NAME=kstack-agent-dev
-DEV_IMAGE_TAG=kstack-agent:dev
+DEV_CONTAINER_NAME=kontainer-core-dev
+DEV_IMAGE_TAG=kontainer-core:dev
 
 docker stop ${DEV_CONTAINER_NAME}
 docker rm ${DEV_CONTAINER_NAME}
@@ -21,11 +21,11 @@ docker run \
   -p 5000:5000 \
   -p 3080:3080 \
   -p 3443:3443 \
-  -e AGENT_HOST=0.0.0.0 \
-  -e AGENT_PORT=5000 \
-  -e AGENT_DATA_DIR=/app/data \
-  -e AGENT_DATA_HOME=$PWD/data \
-  -e AGENT_WORKERS=1 \
-  -e AGENT_DEBUG=1 \
+  -e KONTAINER_HOST=0.0.0.0 \
+  -e KONTAINER_PORT=5000 \
+  -e KONTAINER_DATA_DIR=/app/data \
+  -e KONTAINER_DATA_HOME=$PWD/data \
+  -e KONTAINER_WORKERS=1 \
+  -e KONTAINER_DEBUG=1 \
   -e LOG_LEVEL=info \
   ${DEV_IMAGE_TAG} $@

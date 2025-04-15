@@ -5,9 +5,9 @@ set -xe
 export PYTHON_UNBUFFERED=1
 export PYTHONPATH=/app/src:$PYTHONPATH
 
-export AGENT_DATA_DIR=${AGENT_DATA_DIR:-/app/data}
-export AGENT_HOST=${AGENT_HOST:-0.0.0.0}
-export AGENT_PORT=${AGENT_PORT:-5000}
+export KONTAINER_DATA_DIR=${KONTAINER_DATA_DIR:-/app/data}
+export KONTAINER_HOST=${KONTAINER_HOST:-0.0.0.0}
+export KONTAINER_PORT=${KONTAINER_PORT:-5000}
 
 
 # Auto-detect app dir
@@ -17,7 +17,7 @@ DIR=$(dirname $bin_dir)
 echo "DIR: $DIR"
 
 # Name of the application
-NAME="kstack-agent-api"
+NAME="kontainer-api"
 
 # the user to run as
 USER=$(whoami)
@@ -26,7 +26,7 @@ USER=$(whoami)
 GROUP=$(whoami)
 
 # how many worker processes should Gunicorn spawn
-NUM_WORKERS=${AGENT_WORKERS:-3}
+NUM_WORKERS=${KONTAINER_WORKERS:-3}
 
 # Gunicorn log level
 LOG_LEVEL=${LOG_LEVEL:-info}
@@ -34,7 +34,7 @@ LOG_FILE=${LOG_FILE:--}
 
 # we will communicate using this tcp address and port
 #BIND=0.0.0.0:5000
-BIND=${AGENT_HOST}:${AGENT_PORT}
+BIND=${KONTAINER_HOST}:${KONTAINER_PORT}
 
 # WSGI module name
 WSGI_APP=wsgi:app

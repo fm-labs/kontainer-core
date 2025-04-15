@@ -7,7 +7,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-alpine
-    image: kstack-agent-dev
+    image: kontainer-core-dev
     ports:
       - "5000:5000"
     restart: always
@@ -19,12 +19,12 @@ services:
       - $PWD/agent.py:/app/agent.py:ro
       - $PWD/celery_worker.sh:/app/celery_worker.sh:ro
       - $PWD/data:/app/data
-      #- kstack_agent_data:/app/data
+      #- kontainer_data:/app/data
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - AGENT_HOST=0.0.0.0
-      #- AGENT_PORT=5000
-      #- AGENT_DATA_DIR=/app/data
+      - KONTAINER_HOST=0.0.0.0
+      #- KONTAINER_PORT=5000
+      #- KONTAINER_DATA_DIR=/app/data
     #healthcheck:
     #  test: curl --fail -s http://localhost:5000/ || exit 1
     #  interval: 1m30s
@@ -43,5 +43,5 @@ services:
 
 
 #volumes:
-#  kstack_agent_data:
+#  kontainer_data:
 #  redis_data:
