@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "kontainer"
+name = "kontainer-core"
 version = "0.9.0"
 description = ""
 authors = ["fm-labs <flowmotionlabs@gmail.com>"]
