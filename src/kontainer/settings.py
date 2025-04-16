@@ -43,6 +43,7 @@ KONTAINER_API_KEY = os.getenv("KONTAINER_API_KEY", "")
 
 
 # JWT settings
+JWT_SESSION_LIFETIME_SEC = int(os.getenv("JWT_SESSION_LIFETIME_SEC", "900"))  # 15 minutes
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
 JWT_SECRET_KEY_FILE = os.getenv("JWT_SECRET_KEY_FILE", os.path.join(KONTAINER_DATA_DIR, "jwt_secret.key"))
 if not JWT_SECRET_KEY and JWT_SECRET_KEY_FILE:

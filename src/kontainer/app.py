@@ -35,7 +35,7 @@ app.config["JWT_HEADER_NAME"] = "Authorization"
 app.config["JWT_HEADER_TYPE"] = "Bearer"
 app.config["JWT_JSON_KEY"] = "access_token"
 app.config["JWT_REFRESH_JSON_KEY"] = "access_token"
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(seconds=settings.JWT_SESSION_LIFETIME_SEC)
 
 # If true this will only allow the cookies that contain your JWTs to be sent
 # over https. In production, this should always be set to True
