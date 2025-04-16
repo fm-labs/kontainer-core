@@ -12,4 +12,6 @@ class DockerService:
     def __init__(self, ctx_id):
         self.ctx_id = ctx_id
         docker_host = get_dockerhost_for_ctx_id(ctx_id)
+        if docker_host is None:
+            raise Exception(f"Context id {ctx_id} not found")
         self.dkr = DockerManager(docker_host)

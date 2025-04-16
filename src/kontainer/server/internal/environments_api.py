@@ -2,13 +2,10 @@ import flask
 from flask import jsonify
 from flask_jwt_extended.view_decorators import jwt_required
 
-from kontainer.docker.context import get_docker_envs, add_docker_env, remove_docker_env
+from kontainer.docker.context import get_docker_contexts, add_docker_context, remove_docker_context
 from kontainer.docker.manager import DockerManager
-from kontainer.environments.envmanager import EnvManager
 
 environments_api_bp = flask.Blueprint('environments_api', __name__, url_prefix='/api/environments')
-
-EnvManager.enumerate_environments()
 
 @environments_api_bp.route('', methods=["GET"])
 @jwt_required()
@@ -28,7 +25,7 @@ def list_environments():
     # environments = EnvManager.list_environments()
     # mapped = list(map(lambda x: x.to_dict(), environments))
     # return jsonify(mapped)
-    return jsonify(get_docker_envs())
+    return jsonify(get_docker_contexts())
 
 
 @environments_api_bp.route('', methods=["POST"])
@@ -43,7 +40,7 @@ def create_environment():
     try:
         #env = EnvManager.create(request_json)
         #return jsonify(env.to_dict())
-        env = add_docker_env(**request_json)
+        env = add_docker_context(**request_json)
         return jsonify(env), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 400
@@ -58,7 +55,7 @@ def describe_environment(name: str):
     :return:
     """
     #env = EnvManager.get(name)
-    envs = get_docker_envs()
+    envs = get_docker_contexts()
     env = None
     for e in envs:
         if e["id"] == name:
@@ -79,7 +76,7 @@ def connect_environment(name: str):
     :return:
     """
     #env = EnvManager.get(name)
-    envs = get_docker_envs()
+    envs = get_docker_contexts()
     env = None
     for e in envs:
         if e["id"] == name:
@@ -111,5 +108,5 @@ def remove_environment(name: str):
     #
     # EnvManager.remove(alias)
     # return jsonify(env.to_dict())
-    remove_docker_env(name)
+    remove_docker_context(name)
     return jsonify({"message": "Environment removed"}), 200
