@@ -37,13 +37,14 @@ def _init_docker_compose_stack(ctx_id: str, stack_name: str, meta=None, exists_o
     meta["repository"] = meta.get("repository", dict())
     meta["_created"] = int(time.time())
 
-    stack = DockerComposeStack(stack_name, ctx_id=ctx_id, meta=meta, managed=True)
+    stack = DockerComposeStack(stack_name, ctx_id=ctx_id, config=meta, managed=True)
 
+    full_project_dir = os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir)
     # check/create the stack directory
     if make_dirs:
-        os.makedirs(stack.project_dir, exist_ok=exists_ok)
-    elif exists_ok is False and os.path.exists(stack.project_dir):
-        raise ValueError(f"Stack directory {stack.project_dir} already exists")
+        os.makedirs(full_project_dir, exist_ok=exists_ok)
+    elif exists_ok is False and os.path.exists(full_project_dir):
+        raise ValueError(f"Stack directory {full_project_dir} already exists")
 
     # write the metadata stack file to the stacks directory
     stack.dump()
@@ -63,6 +64,7 @@ def stack_from_scratch(ctx_id, stack_name, **kwargs):
     stack = _init_docker_compose_stack(ctx_id, stack_name, meta=meta)
 
     # Write the content to the stack directory
+    full_project_dir = os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir)
     compose_file = os.path.join(stack.project_dir, "docker-compose.yml")
     with open(compose_file, "w") as f:
         f.write(content)
@@ -153,17 +155,18 @@ def stack_from_gitrepo(ctx_id, stack_name, **kwargs):
     }
     stack = _init_docker_compose_stack(ctx_id, stack_name, meta=meta, make_dirs=False)
 
-    # Clone the repository
-    try:
-        target_dir = stack.project_dir
-        # git.Repo.clone_from(repo_url, stack.project_dir)
-        output = git_clone(repo_url,
-                           target_dir,
-                           private_key_file=private_key_file)
-        print(output)
-        print(f"Stacked cloned to {stack.project_dir}")
-    except Exception as e:
-        raise ValueError(f"Error cloning repository: {e}")
+    # # Clone the repository
+    # try:
+    #     full_project_dir = os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir)
+    #     target_dir = full_project_dir
+    #     # git.Repo.clone_from(repo_url, stack.project_dir)
+    #     output = git_clone(repo_url,
+    #                        target_dir,
+    #                        private_key_file=private_key_file)
+    #     print(output)
+    #     print(f"Stacked cloned to {stack.project_dir}")
+    # except Exception as e:
+    #     raise ValueError(f"Error cloning repository: {e}")
 
     return stack
 

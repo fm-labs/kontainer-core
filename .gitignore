@@ -6,6 +6,7 @@ docker-compose-local.yml
 *.log
 *.local
 x*.sh
+x*.py
 .DS_Store
 
 ### Python template

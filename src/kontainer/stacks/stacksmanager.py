@@ -66,9 +66,6 @@ class StacksManager:
         """
         self.stacks = {}
 
-        if self.ctx_id != "local":
-            return
-
         stacks_dir = os.path.join(KONTAINER_DATA_DIR, 'stacks', self.ctx_id)
         os.makedirs(stacks_dir, exist_ok=True)
         for file in os.listdir(stacks_dir):

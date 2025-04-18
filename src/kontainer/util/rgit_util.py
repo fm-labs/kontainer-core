@@ -1,15 +1,61 @@
+import paramiko
 
-def rgit_clone(repo: str, dest: str, ssh_config, **kwargs) -> bytes:
+from kontainer.util.remote_utils import ssh_connect, exec_ssh_client_command, ssh_connect_sock, exec_ssh_sock_command
+
+
+def rgit_ssh(ssh_config=None) -> paramiko.SSHClient:
+
+    if ssh_config is None:
+        ssh_config = {}
+
+    # hostname = ssh_config.get('hostname')
+    # username = ssh_config.get('username')
+    # password = ssh_config.get('password')
+    # private_key_file = ssh_config.get('private_key_file')
+    # private_key_pass = ssh_config.get('private_key_pass')
+    # private_key_pass_file = ssh_config.get('private_key_pass_file')
+    #
+    # if hostname is None or username is None:
+    #     raise ValueError("SSH hostname and username are required")
+
+    return ssh_connect(**ssh_config)
+
+
+def rgit_clone(repo_url: str, dest: str, ssh_config, **kwargs) -> bytes:
     """
     Run a git clone command
 
-    :param repo: Repository to clone
+    :param repo_url: Repository to clone
     :param ssh_config: SSH configuration
-    :param dest: Destination directory
+    :param dest: Destination directory on the remote server
     :param kwargs: Additional arguments to pass to git clone
     :return:
     """
-    return rgit(["clone", repo, dest], ssh_config, **kwargs)
+
+    command = f"""
+    # check if git command exists
+    if ! command -v git &> /dev/null; then
+        echo "git command not found"
+        exit 1
+    fi
+    mkdir -p {dest} &&
+    cd {dest} &&
+    if [ ! -d "{dest}" ]; then
+        git clone {repo_url} {dest}
+    else
+        cd {dest} && git pull
+    fi
+    """
+
+    # Using a ssh transport here, because we want agent forwarding
+    ssh_sock = ssh_connect_sock(**ssh_config)
+    try:
+        stdout, stderr, rc = exec_ssh_sock_command(ssh_sock, command, agent_forward=True)
+        if rc != 0:
+            raise ValueError(f"Remote cloning repository exit with non-zero exit code: {rc}")
+        return stdout
+    finally:
+        ssh_sock.close()
 
 
 def rgit_pull_head(working_dir: str, ssh_config, **kwargs) -> bytes:
@@ -41,6 +87,5 @@ def rgit(args: list, ssh_config: dict, **kwargs) -> bytes:
     """
     out = b""
     print("rgit", ssh_config, args, **kwargs)
-    if True:
-        raise NotImplementedError("rgit not implemented")
+
     return out

@@ -12,10 +12,9 @@ from kontainer.util.subprocess_util import kwargs_to_cmdargs, load_envfile
 
 class DockerComposeStack(ContainerStack):
 
-    def __init__(self, name, ctx_id, managed=False, meta=None, **kwargs):
-        super().__init__(name=name, ctx_id=ctx_id, managed=managed, meta=meta)
+    def __init__(self, name, ctx_id, managed=False, config=None, **kwargs):
+        super().__init__(name=name, ctx_id=ctx_id, managed=managed, config=config)
         self._dkr = get_docker_manager_cached(ctx_id)
-
 
     def _compose(self, cmd, **kwargs) -> bytes:
         """
@@ -24,16 +23,31 @@ class DockerComposeStack(ContainerStack):
         :param kwargs: Additional arguments to pass to docker compose
         :return:
         """
-        if self.ctx_id != "local":
-            raise Exception(f"Context id {self.ctx_id} not supported for docker compose")
+        if self.ctx_id == "local":
+            return self._compose_local(cmd, **kwargs)
+        else:
+            return self._compose_remote(cmd, **kwargs)
 
-        if self.project_dir is None or not self.exists():
-            return b"Stack does not exist"
 
-        working_dir = self.project_dir
-        if self.meta:
-            base_path = self.meta.get('base_path', "")
+    def _compose_remote(self, cmd, **kwargs) -> bytes:
+        """
+        Run a docker compose command on the remote docker host
+        :param cmd: Command to run
+        :param kwargs: Additional arguments to pass to docker compose
+        :return:
+        """
+        raise Exception(f"Context id {self.ctx_id} not supported for docker compose")
+
+
+    def _compose_local(self, cmd, **kwargs) -> bytes:
+
+        working_dir = os.path.join(settings.KONTAINER_DATA_DIR, self.project_dir)
+        if self.config:
+            base_path = self.config.get('base_path', "")
             working_dir = os.path.join(self.project_dir, base_path)
+
+        if working_dir is None or not os.path.isdir(working_dir):
+            return b"Stack working dir not found " + self.project_dir.encode("utf-8")
 
 
         compose_file = 'docker-compose.yml'
@@ -86,26 +100,26 @@ class DockerComposeStack(ContainerStack):
             raise e
 
 
-    @property
-    def status(self) -> dict:
-        """
-        Get the status of the stack
-        """
-        status = dict({
-            "name": self.name,
-            "project_dir": self.project_dir,
-            "managed": self.managed,
-            "has_docker_compose": os.path.exists(os.path.join(self.project_dir, "docker-compose.yml")),
-            "has_stack_file": os.path.exists(self.project_file),
-            "has_stack": os.path.exists(self.project_dir)
-        })
-        return status
-
-
-    def exists(self) -> bool:
-        if self.project_dir is None:
-            return False
-        return os.path.exists(self.project_dir)
+    # @property
+    # def status(self) -> dict:
+    #     """
+    #     Get the status of the stack
+    #     """
+    #     status = dict({
+    #         "name": self.name,
+    #         "project_dir": self.project_dir,
+    #         "managed": self.managed,
+    #         "has_docker_compose": os.path.exists(os.path.join(self.project_dir, "docker-compose.yml")),
+    #         "has_stack_file": os.path.exists(self.project_file),
+    #         "has_stack": os.path.exists(self.project_dir)
+    #     })
+    #     return status
+    #
+    #
+    # def exists(self) -> bool:
+    #     if self.project_dir is None:
+    #         return False
+    #     return os.path.exists(self.project_dir)
 
 
     def up(self, **kwargs) -> bytes:
@@ -182,12 +196,12 @@ class DockerComposeStack(ContainerStack):
 
 
 class UnmanagedDockerComposeStack(DockerComposeStack):
-    def __init__(self, name, ctx_id, meta=None, **kwargs):
-        super().__init__(name, ctx_id, managed=False, meta=meta)
+    def __init__(self, name, ctx_id, config=None, **kwargs):
+        super().__init__(name, ctx_id, managed=False, config=config)
 
         self.name = name
         self.managed = False
-        self._meta = meta  # will always be None
+        self._meta = config  # will always be None
 
         if self._dkr.stack_exists(name):
             project_dir = self._dkr.get_stack_project_dir(name)

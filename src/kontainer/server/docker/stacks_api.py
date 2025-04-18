@@ -56,6 +56,17 @@ def list_stacks():
     return jsonify(mapped)
 
 
+@stacks_api_bp.route('/<string:name>', methods=["GET"])
+@jwt_required()
+def describe_stack(name):
+    # Managed
+    # First check if the stack is managed
+    ctx_id = g.dkr_ctx_id
+    stacks_manager = get_stacks_manager(ctx_id=ctx_id)
+    stack = stacks_manager.get_or_unmanaged(name)
+    return jsonify(stack.serialize())
+
+
 @stacks_api_bp.route('/<string:name>/start', methods=["POST"])
 @jwt_required()
 def start_stack(name):
@@ -118,17 +129,6 @@ def sync_stack(name):
         task = stack_sync_task.apply_async(args=[ctx_id, name])
         result = {"task_id": task.id, "ref": f"/docker/{name}", "ctx_id": ctx_id}
     return jsonify(result)
-
-
-@stacks_api_bp.route('/<string:name>', methods=["GET"])
-@jwt_required()
-def describe_stack(name):
-    # Managed
-    # First check if the stack is managed
-    ctx_id = g.dkr_ctx_id
-    stacks_manager = get_stacks_manager(ctx_id=ctx_id)
-    stack = stacks_manager.get_or_unmanaged(name)
-    return jsonify(stack.serialize())
 
 
 @stacks_api_bp.route('/<string:name>/restart', methods=["POST"])

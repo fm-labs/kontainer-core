@@ -1,5 +1,6 @@
 import os
 
+from kontainer import settings
 from kontainer.admin.credentials import private_key_exists
 from kontainer.settings import get_real_app_data_path
 from kontainer.stacks import ContainerStack
@@ -15,7 +16,7 @@ def sync_stack(stack: ContainerStack) -> bytes:
     :param stack: The stack to sync
     :return: The output of the sync operation
     """
-    meta = stack.meta
+    meta = stack.config
     if meta is None:
         raise ValueError("No metadata found")
 
@@ -75,62 +76,66 @@ def _sync_repo(stack: ContainerStack, repo: dict):
         raise ValueError("Repository URL not provided")
 
     private_key_file = _lookup_ssh_key_for_repo(repo)
-
-    project_dir = stack.project_dir
-    project_git_dir = os.path.join(project_dir, ".git")
-
+    full_project_dir = str(os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir))
     ssh_config = {
         "private_key_file": private_key_file,
     }
 
     output = b""
-    if os.path.exists(project_dir) and os.path.exists(project_git_dir):
+    if stack.ctx_id == "local" and os.path.exists(full_project_dir):
         # Pull the latest changes
         try:
-            if stack.ctx_id == "local":
-                pull_output = git_pull_head(project_dir,
-                                            force=True,
-                                            # reset=True,
-                                            private_key_file=private_key_file,
-                                            timeout=120)
-            else:
-                pull_output = rgit_pull_head(project_dir,
-                                             ssh_config,
-                                             force=True,
-                                             # reset=True,
-                                             timeout=120)
+            pull_output = git_pull_head(full_project_dir,
+                                        force=True,
+                                        # reset=True,
+                                        private_key_file=private_key_file,
+                                        timeout=120)
+
             print(pull_output)
             print(f"Updated git repo at {stack.project_dir}")
             output += pull_output
         except Exception as e:
             raise ValueError(f"Error updating repository: {e}")
 
-    else:
+    elif stack.ctx_id == "local" and not os.path.exists(full_project_dir):
+
         # Clone the repository
         try:
-            if stack.ctx_id == "local":
-                # git.Repo.clone_from(repo_url, stack.project_dir)
-                clone_output = git_clone(repo_url,
-                                         project_dir,
-                                         private_key_file=private_key_file,
-                                         single_branch=True,
-                                         branch=repo_branch,
-                                         timeout=120)
+            # git.Repo.clone_from(repo_url, stack.project_dir)
+            clone_output = git_clone(repo_url,
+                                     dest=full_project_dir,
+                                     private_key_file=private_key_file,
+                                     single_branch=True,
+                                     branch=repo_branch,
+                                     timeout=120)
 
-            else:
-                # git.Repo.clone_from(repo_url, stack.project_dir)
-                clone_output = rgit_clone(repo_url,
-                                          dest=project_dir,
-                                          ssh_config=ssh_config,
-                                          single_branch=True,
-                                          branch=repo_branch,
-                                          timeout=120)
 
             print(clone_output)
             print(f"Cloned git repo to {stack.project_dir}")
             output += clone_output
         except Exception as e:
             raise ValueError(f"Error cloning repository: {e}")
+
+    elif stack.ctx_id != "local":
+
+        # pull_output = rgit_pull_head(stack.project_dir,
+        #                              ssh_config,
+        #                              force=True,
+        #                              # reset=True,
+        #                              timeout=120)
+
+        try:
+            clone_output = rgit_clone(repo_url,
+                                      dest=stack.project_dir,
+                                      ssh_config=ssh_config,
+                                      single_branch=True,
+                                      branch=repo_branch,
+                                      timeout=120)
+            print(clone_output)
+            print(f"Cloned git repo to {stack.project_dir}")
+            output += clone_output
+        except Exception as e:
+            raise ValueError(f"Error remote cloning repository: {e}")
 
     return output
 
@@ -142,7 +147,7 @@ def _process_compose_file(stack: ContainerStack) -> str | None:
     :param stack: The stack to process
     :return: The path to the modified docker-compose file
     """
-    base_path = stack.meta.get("base_path", "")
+    base_path = stack.config.get("base_path", "")
     compose_file_path = os.path.join(stack.project_dir, base_path, "docker-compose.yml")
     if not os.path.exists(compose_file_path):
         return None
