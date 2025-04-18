@@ -5,7 +5,7 @@ from flask_jwt_extended.view_decorators import jwt_required
 from kontainer.docker.util import list_projects_from_containers, filter_containers_by_project, \
     filter_containers_by_status_text
 from kontainer.server.middleware import docker_service_middleware
-from kontainer.stacks.dockerstacks import DockerComposeStack, UnmanagedDockerComposeStack
+from kontainer.stacks.dockerstacks import UnmanagedDockerComposeStack
 from kontainer.stacks.stacksmanager import get_stacks_manager
 from kontainer.stacks.tasks import stack_start_task, stack_stop_task, stack_destroy_task, stack_restart_task, \
     create_stack_task, \

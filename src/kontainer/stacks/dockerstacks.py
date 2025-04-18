@@ -23,7 +23,8 @@ class DockerComposeStack(ContainerStack):
 
     def _compose(self, cmd, **kwargs) -> bytes:
         """
-        Run a docker compose command
+        Run a docker compose command.
+
         :param cmd: Command to run
         :param kwargs: Additional arguments to pass to docker compose
         :return:
@@ -36,14 +37,15 @@ class DockerComposeStack(ContainerStack):
 
     def _compose_remote(self, cmd, **kwargs) -> bytes:
         """
-        Run a docker compose command on the remote docker host
+        Run a docker compose command on the remote docker host.
+
         :param cmd: Command to run
         :param kwargs: Additional arguments to pass to docker compose
         :return:
         """
         compose_project_name = self.name
         compose_file_name = 'docker-compose.yml'
-        remote_working_dir = "~/.kontainer"
+        remote_working_dir = f"~/.kontainer/stacks/{self.ctx_id}/{self.name}"
 
         compose_args = dict()
         compose_args['project-name'] = self.name
@@ -83,6 +85,7 @@ class DockerComposeStack(ContainerStack):
             #     raise Exception(f"Error running command: {p1.stderr}")
             #
             # return p1.stdout
+            raise Exception("Docker Compose remote execution not implemented yet")
         except Exception as e:
             print(e)
             raise e
@@ -125,6 +128,7 @@ class DockerComposeStack(ContainerStack):
 
             # penv = os.environ.copy()
             penv = dict()
+            penv['HOME'] = os.getenv('HOME')
             penv['PATH'] = os.getenv('PATH')
             #todo penv['DOCKER_HOST'] = 'unix:///var/run/docker.sock'
             penv['DOCKER_CONFIG'] = settings.DOCKER_CONFIG
