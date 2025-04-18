@@ -5,7 +5,7 @@ from kontainer import settings
 from kontainer.docker.dkr import get_docker_manager_cached
 from kontainer.settings import DEFAULT_CONTAINER_REGISTRIES
 from kontainer.util.aws_util import aws_ecr_login
-from kontainer.util.docker_utils import dockercli_login_ecr_with_awscli
+from kontainer.util.dockercli_utils import dockercli_login_ecr_with_awscli
 
 CONFIG_DIR = os.path.join(settings.KONTAINER_DATA_DIR, 'config')
 CONTAINER_REGISTRIES_FILE = os.path.join(CONFIG_DIR, 'registries.json')

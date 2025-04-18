@@ -5,7 +5,7 @@ import time
 import requests
 
 from kontainer import settings
-from kontainer.stacks.docker import DockerComposeStack
+from kontainer.stacks.dockerstacks import DockerComposeStack
 from kontainer.util.git_util import git_clone
 
 DATA_DIR = settings.KONTAINER_DATA_DIR

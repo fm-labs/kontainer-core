@@ -2,8 +2,10 @@ import flask
 from flask import jsonify, request, g
 from flask_jwt_extended.view_decorators import jwt_required
 
+from kontainer.docker.util import list_projects_from_containers, filter_containers_by_project, \
+    filter_containers_by_status_text
 from kontainer.server.middleware import docker_service_middleware
-from kontainer.stacks.docker import DockerComposeStack
+from kontainer.stacks.dockerstacks import DockerComposeStack, UnmanagedDockerComposeStack
 from kontainer.stacks.stacksmanager import get_stacks_manager
 from kontainer.stacks.tasks import stack_start_task, stack_stop_task, stack_destroy_task, stack_restart_task, \
     create_stack_task, \
@@ -28,27 +30,25 @@ def list_stacks():
     # time_start = time.time()
     containers = g.dkr.list_containers()
     # print(f"Listed containers (1) in {time.time() - time_start} seconds")
-    active_stack_names = list(
-        set([c.attrs.get('Config', {}).get('Labels', {}).get('com.docker.compose.project') for c in containers]))
-
+    active_stack_names = list_projects_from_containers(containers)
     # print(f"Listed containers (2) in {time.time() - time_start} seconds")
-
-    def _get_containers_for_stack(stack_name):
-        return [c.attrs for c in containers if
-                c.attrs.get('Config', {}).get('Labels', {}).get('com.docker.compose.project') == stack_name]
 
     # time_start = time.time()
     for active_stack_name in active_stack_names:
         if active_stack_name is None:
             continue
         if active_stack_name not in managed_names:
-            stack = DockerComposeStack(active_stack_name, ctx_id=ctx_id, managed=False)
+            #stack = DockerComposeStack(active_stack_name, ctx_id=ctx_id, managed=False)
+            stack = UnmanagedDockerComposeStack(active_stack_name, ctx_id=ctx_id)
             stacks.append(stack)
 
     def _map_managed_stack(_stack):
         stack_data = _stack.serialize()
-        stack_data['status'] = 'running' if _stack.name in active_stack_names else '-'
-        stack_data['containers'] = _get_containers_for_stack(_stack.name)
+        stack_containers = filter_containers_by_project(containers, _stack.name)
+        stack_data['containers'] = list(map(lambda c: c.attrs, stack_containers))
+        stack_data['status'] = 'idle' if _stack.name in active_stack_names else 'created'
+        if len(filter_containers_by_status_text(stack_containers, "running")) > 0:
+            stack_data['status'] = 'running'
         return stack_data
 
     mapped = list(map(lambda x: _map_managed_stack(x), stacks))

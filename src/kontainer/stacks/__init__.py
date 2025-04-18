@@ -7,11 +7,12 @@ from kontainer import settings
 
 class ContainerStack(metaclass=ABCMeta):
 
-    def __init__(self, name, managed=False, meta=None):
+    def __init__(self, name, ctx_id, managed=False, meta=None):
+        self.ctx_id = ctx_id
         self.name = name
         self.managed = managed
-        self.project_dir = os.path.join(settings.KONTAINER_DATA_DIR, 'stacks', self.name)
-        self.project_file = os.path.join(settings.KONTAINER_DATA_DIR, 'stacks', self.name + '.stack.json')
+        self.project_dir = os.path.join(settings.KONTAINER_DATA_DIR, 'stacks', self.ctx_id, self.name)
+        self.project_file = os.path.join(settings.KONTAINER_DATA_DIR, 'stacks', self.ctx_id, self.name + '.stack.json')
 
         self._meta = meta
 

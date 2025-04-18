@@ -5,6 +5,7 @@ from kontainer.settings import get_real_app_data_path
 from kontainer.stacks import ContainerStack
 from kontainer.util.composefile_util import modify_docker_compose_volumes
 from kontainer.util.git_util import git_clone, git_pull_head
+from kontainer.util.rgit_util import rgit_clone, rgit_pull_head
 
 
 def sync_stack(stack: ContainerStack) -> bytes:
@@ -19,13 +20,10 @@ def sync_stack(stack: ContainerStack) -> bytes:
         raise ValueError("No metadata found")
 
     repo = meta.get("repository", None)
-    compose_url = meta.get("compose_url", None)
 
     out = b""
     if repo is not None:
         out = _sync_repo(stack, repo)
-    elif compose_url is not None:
-        out = _sync_compose_url(stack, compose_url)
     else:
         raise ValueError("No repository or compose URL provided")
 
@@ -81,15 +79,26 @@ def _sync_repo(stack: ContainerStack, repo: dict):
     project_dir = stack.project_dir
     project_git_dir = os.path.join(project_dir, ".git")
 
+    ssh_config = {
+        "private_key_file": private_key_file,
+    }
+
     output = b""
     if os.path.exists(project_dir) and os.path.exists(project_git_dir):
         # Pull the latest changes
         try:
-            pull_output = git_pull_head(project_dir,
-                                force=True,
-                                # reset=True,
-                                private_key_file=private_key_file,
-                                timeout=120)
+            if stack.ctx_id == "local":
+                pull_output = git_pull_head(project_dir,
+                                            force=True,
+                                            # reset=True,
+                                            private_key_file=private_key_file,
+                                            timeout=120)
+            else:
+                pull_output = rgit_pull_head(project_dir,
+                                             ssh_config,
+                                             force=True,
+                                             # reset=True,
+                                             timeout=120)
             print(pull_output)
             print(f"Updated git repo at {stack.project_dir}")
             output += pull_output
@@ -99,13 +108,24 @@ def _sync_repo(stack: ContainerStack, repo: dict):
     else:
         # Clone the repository
         try:
-            # git.Repo.clone_from(repo_url, stack.project_dir)
-            clone_output = git_clone(repo_url,
-                               project_dir,
-                               private_key_file=private_key_file,
-                               single_branch=True,
-                               branch=repo_branch,
-                               timeout=120)
+            if stack.ctx_id == "local":
+                # git.Repo.clone_from(repo_url, stack.project_dir)
+                clone_output = git_clone(repo_url,
+                                         project_dir,
+                                         private_key_file=private_key_file,
+                                         single_branch=True,
+                                         branch=repo_branch,
+                                         timeout=120)
+
+            else:
+                # git.Repo.clone_from(repo_url, stack.project_dir)
+                clone_output = rgit_clone(repo_url,
+                                          dest=project_dir,
+                                          ssh_config=ssh_config,
+                                          single_branch=True,
+                                          branch=repo_branch,
+                                          timeout=120)
+
             print(clone_output)
             print(f"Cloned git repo to {stack.project_dir}")
             output += clone_output
@@ -113,10 +133,6 @@ def _sync_repo(stack: ContainerStack, repo: dict):
             raise ValueError(f"Error cloning repository: {e}")
 
     return output
-
-
-def _sync_compose_url(stack: ContainerStack, compose_url: str):
-    raise NotImplementedError("Syncing from a compose URL is not implemented")
 
 
 def _process_compose_file(stack: ContainerStack) -> str | None:
@@ -136,5 +152,3 @@ def _process_compose_file(stack: ContainerStack) -> str | None:
     modify_docker_compose_volumes(compose_file_path, output_path, prefix)
     print(f"Modified docker-compose.yml saved to {output_path}")
     return output_path
-
-

@@ -5,7 +5,7 @@ from typing import Union
 from . import ContainerStack
 from .initializer import stack_from_portainer_template, stack_from_gitrepo, \
     stack_from_compose_url, stack_from_scratch, stack_from_template_repo, stack_from_template
-from .docker import DockerComposeStack, UnmanagedDockerComposeStack
+from .dockerstacks import DockerComposeStack, UnmanagedDockerComposeStack
 from .sync import sync_stack
 from ..settings import KONTAINER_DATA_DIR
 
@@ -66,24 +66,26 @@ class StacksManager:
         """
         self.stacks = {}
 
-        if self.ctx_id == "local":
-            stacks_dir = os.path.join(KONTAINER_DATA_DIR, 'stacks')
-            os.makedirs(stacks_dir, exist_ok=True)
-            for file in os.listdir(stacks_dir):
-                file_path = os.path.join(stacks_dir, file)
-                if os.path.isdir(file_path):
-                    docker_compose = os.path.join(file_path, "docker-compose.yml")
-                    if os.path.exists(docker_compose):
-                        stack = DockerComposeStack(file, ctx_id=self.ctx_id, managed=True)
-                        self.add(stack)
-                        print(f"Added from dir {stack.name}")
-                    else:
-                        print(f"Skipping {file_path}")
-                elif os.path.isfile(file_path) and file.endswith(".stack.json"):
-                    stack_name = file.replace(".stack.json", "")
-                    stack = DockerComposeStack(stack_name, ctx_id=self.ctx_id, managed=True)
-                    self.add(stack)
-                    print(f"Added from Json {stack.name}")
+        if self.ctx_id != "local":
+            return
+
+        stacks_dir = os.path.join(KONTAINER_DATA_DIR, 'stacks', self.ctx_id)
+        os.makedirs(stacks_dir, exist_ok=True)
+        for file in os.listdir(stacks_dir):
+            file_path = os.path.join(stacks_dir, file)
+            # if os.path.isdir(file_path):
+            #     docker_compose = os.path.join(file_path, "docker-compose.yml")
+            #     if os.path.exists(docker_compose):
+            #         stack = DockerComposeStack(file, ctx_id=self.ctx_id, managed=True)
+            #         self.add(stack)
+            #         print(f"Added from stack dir: {stack.name}")
+            #     else:
+            #         print(f"Skipping {file_path}")
+            if os.path.isfile(file_path) and file.endswith(".stack.json"):
+                stack_name = file.replace(".stack.json", "")
+                stack = DockerComposeStack(stack_name, ctx_id=self.ctx_id, managed=True)
+                self.add(stack)
+                print(f"Added from stack.json: {stack.name}")
 
 
     

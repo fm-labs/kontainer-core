@@ -13,9 +13,7 @@ from kontainer.util.subprocess_util import kwargs_to_cmdargs, load_envfile
 class DockerComposeStack(ContainerStack):
 
     def __init__(self, name, ctx_id, managed=False, meta=None, **kwargs):
-        super().__init__(name, managed=managed, meta=meta)
-
-        self.ctx_id = ctx_id
+        super().__init__(name=name, ctx_id=ctx_id, managed=managed, meta=meta)
         self._dkr = get_docker_manager_cached(ctx_id)
 
 
