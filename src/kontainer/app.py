@@ -17,7 +17,7 @@ app = Flask(__name__)
 app.logger.info("Initializing kontainer core")
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # App configuration
 app.config['DATA_DIR'] = settings.KONTAINER_DATA_DIR
