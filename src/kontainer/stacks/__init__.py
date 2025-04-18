@@ -6,6 +6,21 @@ from kontainer import settings
 
 
 class ContainerStack(metaclass=ABCMeta):
+    """
+    Base class for all container stacks.
+
+    This class is used to manage the lifecycle of a stack, including
+    starting, stopping, and destroying the stack. It also provides
+    methods for loading and dumping the stack configuration.
+
+    Attributes:
+        ctx_id (str): The context ID of the stack.
+        name (str): The name of the stack.
+        managed (bool): Whether the stack is managed by the system.
+        project_dir (str): The directory where the stack is located.
+        _config_file (str): The path to the stack configuration file.
+        _config (dict): The stack configuration.
+    """
 
     def __init__(self, name, ctx_id, managed=False, config=None):
         self.ctx_id = ctx_id
@@ -14,8 +29,7 @@ class ContainerStack(metaclass=ABCMeta):
         #self.project_dir = os.path.join(settings.KONTAINER_DATA_DIR, 'stacks', self.ctx_id, self.name)
         self.project_dir = f"stacks/{self.ctx_id}/{self.name}"
 
-        #self._config_file = os.path.join(settings.KONTAINER_DATA_DIR, 'stacks', self.ctx_id, self.name + '.stack.json')
-        self._config_file = f"stacks/{self.ctx_id}/{self.name}.stack.json"
+        self._config_file = os.path.join(settings.KONTAINER_DATA_DIR, f"stacks/{self.ctx_id}/{self.name}.stack.json")
         self._config = config
 
         if not managed:
@@ -52,10 +66,6 @@ class ContainerStack(metaclass=ABCMeta):
     def destroy(self) -> bytes:
         pass
 
-    @abstractmethod
-    def exists(self) -> bool:
-        pass
-
     def load(self) -> None:
         if not self.managed:
             #print(f"Stack {self.name} is not managed")
@@ -81,17 +91,5 @@ class ContainerStack(metaclass=ABCMeta):
             "config": self.config
         }
 
-        # serialized = {}
-        # if self.meta:
-        #     serialized = self.meta.copy()
-        #
-        # serialized["ctx_id"] = self.ctx_id
-        # serialized["name"] = self.name
-        # serialized["managed"] = self.managed
-        # serialized["project_dir"] = self.project_dir
-        # serialized["project_file"] = self.project_file
-        # return serialized
-
     def to_dict(self):
         return self.serialize()
-

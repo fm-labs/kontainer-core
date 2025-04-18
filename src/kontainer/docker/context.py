@@ -19,32 +19,69 @@ def get_docker_contexts_file():
 
 def get_docker_contexts():
     """
-    Get the list of environments
+    Get the list of environments.
+    The list of environments is read from the contexts.json file
+    or from the environment variables KONTAINER_CONTEXT_<ctx_nr> and KONTAINER_CONTEXT_<ctx_nr>_HOST.
+    If no contexts are found, the default context is added.
+
     :return: list of environments
     """
     global contexts_cache
     if contexts_cache is None:
+        # read the contexts.json file
         _contexts = read_docker_contexts_json()
+
+        # if no contexts are found, check the environment variables
         if not _contexts or len(_contexts) == 0:
             _contexts = read_docker_contexts_from_environment_variables()
+
+        # if no contexts are found, add the default context
+        if not _contexts or len(_contexts) == 0:
+            _contexts = [{"id": "local", "host": "unix://var/run/docker.sock"}]
+
         contexts_cache = _contexts
     return contexts_cache
 
 
 def get_dockerhost_for_ctx_id(ctx_id):
+    """
+    Get the docker host for the given context id.
+
+    :param ctx_id: context id
+    :return: docker host
+    """
 
     # todo: remove this
     if ctx_id == "local" or ctx_id == "default":
         return "unix://var/run/docker.sock"
+    elif ctx_id == "local-tcp":
+        return "tcp://localhost:2375"
 
     contexts = get_docker_contexts()
     docker_host = None
     for context in contexts:
         if context["id"] == ctx_id:
-            docker_host = context["host"]
+            docker_host = context.get("host")
             break
 
     return docker_host
+
+
+def get_ssh_config_for_ctx_id(ctx_id):
+    """
+    Get the SSH config for the given context id.
+
+    :param ctx_id: context id
+    :return: ssh config
+    """
+    contexts = get_docker_contexts()
+    ssh_config = None
+    for context in contexts:
+        if context["id"] == ctx_id:
+            ssh_config = context.get("ssh_config")
+            break
+
+    return ssh_config
 
 
 def add_docker_context(ctx_id, host, write=False):

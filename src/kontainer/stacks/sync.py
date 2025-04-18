@@ -4,9 +4,10 @@ from kontainer import settings
 from kontainer.admin.credentials import private_key_exists
 from kontainer.settings import get_real_app_data_path
 from kontainer.stacks import ContainerStack
+from kontainer.stacks.stackfile import Stackfile
 from kontainer.util.composefile_util import modify_docker_compose_volumes
 from kontainer.util.git_util import git_clone, git_pull_head
-from kontainer.util.rgit_util import rgit_clone, rgit_pull_head
+from kontainer.util.rgit_util import rgit_clone
 
 
 def sync_stack(stack: ContainerStack) -> bytes:
@@ -16,21 +17,43 @@ def sync_stack(stack: ContainerStack) -> bytes:
     :param stack: The stack to sync
     :return: The output of the sync operation
     """
-    meta = stack.config
-    if meta is None:
-        raise ValueError("No metadata found")
+    config = stack.config
+    if config is None:
+        raise ValueError("No stack config found")
 
-    repo = meta.get("repository", None)
-
+    parsed_compose_file_path = None
+    base_path = config.get("base_path", "")
+    full_project_path = os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir, base_path)
     out = b""
-    if repo is not None:
-        out = _sync_repo(stack, repo)
+
+    # sync the stack from a git repository, if any
+    repo = config.get("repository", None)
+    if repo is not None and isinstance(repo, dict):
+        out += _sync_stack_git_repo(stack, repo)
     else:
-        raise ValueError("No repository or compose URL provided")
+        # raise ValueError("No repository or compose URL provided")
+        out += b"Warning: No repository or other sync source provided."
 
-    _process_compose_file(stack)
+        # make sure the directory exists
+        if not os.path.exists(full_project_path):
+            os.makedirs(full_project_path, exist_ok=True)
+            out += b"Created project directory: " + full_project_path.encode()
 
-    return out
+    # try to parse inline template first, if any
+    if parsed_compose_file_path is None:
+        parsed_compose_file_path = _sync_stack_inline_template(stack)
+
+    # try to parse the compose file, if any
+    if parsed_compose_file_path is None:
+        parsed_compose_file_path = _sync_stack_compose_file(stack)
+
+    if parsed_compose_file_path:
+        out += b"Parsed docker-compose file: " + parsed_compose_file_path.encode()
+        return out
+
+    #out += b"Warning: No docker-compose or stack file detected."
+    #return out
+    raise ValueError("No docker-compose or stack file detected.")
 
 
 def _lookup_ssh_key_for_repo(repo: dict):
@@ -62,7 +85,7 @@ def _lookup_ssh_key_for_repo(repo: dict):
     return private_key_file
 
 
-def _sync_repo(stack: ContainerStack, repo: dict):
+def _sync_stack_git_repo(stack: ContainerStack, repo: dict):
     """
     Sync a stack from a git repository
 
@@ -140,20 +163,48 @@ def _sync_repo(stack: ContainerStack, repo: dict):
     return output
 
 
-def _process_compose_file(stack: ContainerStack) -> str | None:
+def _sync_stack_inline_template(stack: ContainerStack) -> str | None:
     """
-    Modify the docker-compose.yml file to use the kontainer prefix
+    Sync a stack from an inline template.
 
-    :param stack: The stack to process
-    :return: The path to the modified docker-compose file
+    :param stack: The stack to sync
+    :return: The path to the compiled docker-compose file or None
     """
-    base_path = stack.config.get("base_path", "")
-    compose_file_path = os.path.join(stack.project_dir, base_path, "docker-compose.yml")
-    if not os.path.exists(compose_file_path):
+
+    template = stack.config.get("template", None)
+    if template is None or not isinstance(template, dict):
         return None
 
-    output_path = os.path.join(stack.project_dir, base_path, "docker-compose.stack.yml")
-    prefix = os.path.join(get_real_app_data_path(), "stacks", stack.name, base_path)
-    modify_docker_compose_volumes(compose_file_path, output_path, prefix)
+    base_path = stack.config.get("base_path", "")
+    output_path = os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir, base_path, "docker-compose.stack.yml")
+
+    stackfile = Stackfile(content=template)
+    stackfile.write_yaml_file(output_path)
+    return str(output_path)
+
+
+def _sync_stack_compose_file(stack: ContainerStack) -> str | None:
+    """
+    Modify the docker-compose.yml file to use the kontainer prefix for volumes.
+
+    :param stack: The stack to process
+    :return: The path to the compiled docker-compose file
+    """
+    base_path = stack.config.get("base_path", "")
+    compose_file = stack.config.get("compose_file", "docker-compose.yml")
+    compose_file_path = os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir, base_path, compose_file)
+    if not os.path.exists(compose_file_path):
+        # raise FileNotFoundError(f"docker-compose file not found: {compose_file_path}")
+        return None
+
+    output_path = os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir, base_path, "docker-compose.stack.yml")
+    #output_path = os.path.join(settings.KONTAINER_DATA_DIR, stack.name + ".stack.yml")
+    volumes_prefix = os.path.join(get_real_app_data_path(), "stacks", stack.name, base_path)
+    modify_docker_compose_volumes(compose_file_path, output_path, volumes_prefix)
     print(f"Modified docker-compose.yml saved to {output_path}")
-    return output_path
+
+    #stackfile = Stackfile.from_yaml_file(compose_file_path)
+    #stackfile.modify_docker_compose_volumes(prefix)
+    #stackfile.write_yaml_file(output_path)
+
+    return str(output_path)

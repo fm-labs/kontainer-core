@@ -64,8 +64,8 @@ def stack_from_scratch(ctx_id, stack_name, **kwargs):
     stack = _init_docker_compose_stack(ctx_id, stack_name, meta=meta)
 
     # Write the content to the stack directory
-    full_project_dir = os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir)
-    compose_file = os.path.join(stack.project_dir, "docker-compose.yml")
+    full_project_dir = str(os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir))
+    compose_file = os.path.join(full_project_dir, "docker-compose.yml")
     with open(compose_file, "w") as f:
         f.write(content)
 
@@ -106,7 +106,8 @@ def stack_from_compose_url(ctx_id, stack_name, **kwargs):
     # @todo parse and validate the content
 
     # Write the content to the stack directory
-    compose_file = os.path.join(stack.project_dir, "docker-compose.yml")
+    full_project_dir = str(os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir))
+    compose_file = os.path.join(full_project_dir, "docker-compose.yml")
     with open(compose_file, "w") as f:
         f.write(content)
 
@@ -219,7 +220,7 @@ def stack_from_template_dir(ctx_id, stack_name, template_dir=None, parameters=No
         raise ValueError(f"Template not found at {template_dir}")
 
     stack = _init_docker_compose_stack(ctx_id, stack_name)
-    stack_base_dir = stack.project_dir
+    stack_base_dir = str(os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir))
 
     for root, dirs, files in os.walk(template_dir):
         for file in files:

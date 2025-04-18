@@ -1,4 +1,3 @@
-
 import os
 import subprocess
 
@@ -11,10 +10,16 @@ from kontainer.util.subprocess_util import kwargs_to_cmdargs, load_envfile
 
 
 class DockerComposeStack(ContainerStack):
+    """
+    Docker Compose container stack.
+
+    This class is used to manage the lifecycle of a Docker Compose stack
+    """
 
     def __init__(self, name, ctx_id, managed=False, config=None, **kwargs):
         super().__init__(name=name, ctx_id=ctx_id, managed=managed, config=config)
         self._dkr = get_docker_manager_cached(ctx_id)
+
 
     def _compose(self, cmd, **kwargs) -> bytes:
         """
@@ -36,26 +41,74 @@ class DockerComposeStack(ContainerStack):
         :param kwargs: Additional arguments to pass to docker compose
         :return:
         """
-        raise Exception(f"Context id {self.ctx_id} not supported for docker compose")
+        compose_project_name = self.name
+        compose_file_name = 'docker-compose.yml'
+        remote_working_dir = "~/.kontainer"
+
+        compose_args = dict()
+        compose_args['project-name'] = self.name
+        compose_args['project-directory'] = remote_working_dir
+        compose_args['file'] = compose_file_name
+        compose_args['progress'] = 'plain'
+        try:
+            pcmd = ((["docker-compose"]
+                     + kwargs_to_cmdargs(compose_args))  # compose specific args
+                    + [cmd]  # the compose command (up/down/...)
+                    + kwargs_to_cmdargs(kwargs))  # additional command args
+            print(f"RAW CMD: {pcmd}")
+            print(f"CMD: {" ".join(pcmd)}")
+
+            # environment variables for docker compose ON THE REMOTE HOST (!)
+            renv = dict()
+            # renv['PATH'] = os.getenv('PATH')
+            # todo renv['DOCKER_HOST'] = 'unix:///var/run/docker.sock' # the docker host on the remote machine
+            # todo renv['DOCKER_CONFIG'] = settings.DOCKER_CONFIG # the docker config on the remote machine
+            renv['COMPOSE_PROJECT_DIRECTORY'] = remote_working_dir
+            renv['COMPOSE_PROJECT_NAME'] = compose_project_name
+            renv['COMPOSE_FILE'] = compose_file_name
+            renv['PWD'] = remote_working_dir
+            # renv['DOCKER_HOST'] = 'unix:///var/run/docker.sock'
+
+            # todo Load .env file into 'renv'
+            # env_file = os.path.join(KONTAINER_DATA_DIR, 'stacks', f'{self.name}.stack.env.production')
+            # if os.path.exists(env_file):
+            #     renv = load_envfile(env_file, renv)
+            # print(f"ENV: {renv}")
+
+            # p1 = subprocess.run(pcmd, cwd=working_dir, env=renv, capture_output=True)
+            # print("STDOUT", p1.stdout)
+            # print("STDERR", p1.stderr)
+            #
+            # if p1.returncode != 0:
+            #     raise Exception(f"Error running command: {p1.stderr}")
+            #
+            # return p1.stdout
+        except Exception as e:
+            print(e)
+            raise e
+
 
 
     def _compose_local(self, cmd, **kwargs) -> bytes:
+        """
+        Run a docker compose command locally
 
-        working_dir = os.path.join(settings.KONTAINER_DATA_DIR, self.project_dir)
+        :param cmd: Command to run
+        :param kwargs: Additional arguments to pass to docker compose
+        :return:
+        """
+
+        base_path = ""
         if self.config:
             base_path = self.config.get('base_path', "")
-            working_dir = os.path.join(self.project_dir, base_path)
 
+        working_dir = str(os.path.join(settings.KONTAINER_DATA_DIR, self.project_dir, base_path))
         if working_dir is None or not os.path.isdir(working_dir):
             return b"Stack working dir not found " + self.project_dir.encode("utf-8")
-
 
         compose_file = 'docker-compose.yml'
         if os.path.exists(os.path.join(working_dir, 'docker-compose.stack.yml')):
             compose_file = 'docker-compose.stack.yml'
-        # if os.path.exists('docker-compose.override.yml'):
-        #    compose_file = 'docker-compose.override.yml'
-
 
         compose_args = dict()
         compose_args['project-name'] = self.name
@@ -196,6 +249,12 @@ class DockerComposeStack(ContainerStack):
 
 
 class UnmanagedDockerComposeStack(DockerComposeStack):
+    """
+    Unmanaged Docker Compose stack.
+
+    This class is used to manage the lifecycle of a Docker Compose stack
+    that is not managed by the agent.
+    """
     def __init__(self, name, ctx_id, config=None, **kwargs):
         super().__init__(name, ctx_id, managed=False, config=config)
 
@@ -298,10 +357,3 @@ class UnmanagedDockerComposeStack(DockerComposeStack):
                 print(f"Error removing container {container.id}: {e}")
                 out += f"Error removing container {container.id}: {e}\n".encode("utf-8")
         return out
-
-
-    def exists(self) -> bool:
-        """
-        If a project directory has been set, then the stack exists
-        """
-        return self.project_dir is not None

@@ -84,16 +84,13 @@ class StacksManager:
                 self.add(stack)
                 print(f"Added from stack.json: {stack.name}")
 
-
     
     def register_initializer(self, initializer_name, initializer):
         self.initializers[initializer_name] = initializer
 
 
-    
     def deregister_initializer(self, initializer_name):
         del self.initializers[initializer_name]
-
 
     
     def init_stack(self, name, initializer_name=None, **kwargs):
@@ -111,12 +108,10 @@ class StacksManager:
 
     # MANAGE STACKS
 
-    
     def list_all(self):
         return self.stacks.values()
 
 
-    
     def add(self, stack) -> None:
         if stack.name in self.stacks:
             # raise ValueError(f"Stack {stack.name} already exists")
@@ -133,13 +128,11 @@ class StacksManager:
         return stack
 
 
-    
-    def get_or_unmanaged(self, name) -> UnmanagedDockerComposeStack | None:
+    def get_or_unmanaged(self, name) -> ContainerStack:
         stack = self.get(name)
         if stack is None:
             stack = UnmanagedDockerComposeStack(name, ctx_id=self.ctx_id)
             self.add(stack) # Add the unmanaged stack to the manager
-
         return stack
 
     
@@ -154,7 +147,6 @@ class StacksManager:
 
     # STACK OPERATIONS
 
-    
     def start(self, name) -> bytes:
         # if name not in self.stacks:
         #     raise ValueError(f"Stack {name} not found")
@@ -200,14 +192,16 @@ class StacksManager:
             out += bytes(f"\n\nError during stack destroy: {e}", 'utf-8')
 
         # Remove the stack file and directory from the local filesystem
-        if stack.managed and os.path.exists(stack.project_dir):
+        full_project_dir = os.path.join(KONTAINER_DATA_DIR, stack.project_dir)
+        if stack.managed and os.path.exists(full_project_dir):
             # Remove the project directory recursively with shutil.rmtree
-            shutil.rmtree(stack.project_dir)
+            shutil.rmtree(full_project_dir)
             out += bytes(f"\n\nDeleted project directory {stack.project_dir}", 'utf-8')
 
-        if stack.managed and os.path.exists(stack.project_file):
-            os.remove(stack.project_file)
-            out += bytes(f"\n\nDeleted project file {stack.project_file}", 'utf-8')
+        project_file = os.path.join(KONTAINER_DATA_DIR, stack.name + ".stack.json")
+        if stack.managed and os.path.exists(project_file):
+            os.remove(project_file)
+            out += bytes(f"\n\nDeleted project file {project_file}", 'utf-8')
 
         # Remove the stack from the manager
         if name in self.stacks:
@@ -215,22 +209,17 @@ class StacksManager:
 
         return out
 
-
     
     def sync(self, name) -> bytes:
         if self.ctx_id != "local":
             raise ValueError("Sync is only supported for local stacks")
 
-        #if name not in self.stacks:
-        #    raise ValueError(f"Stack {name} not found")
-
         # Refresh the list of stacks
-        # @todo find a better way to do this
+        # @todo find a better way to refresh the list of stacks before sync
         self.enumerate()
 
         stack = self.get_or_unmanaged(name)
-        if stack is None or isinstance(stack, UnmanagedDockerComposeStack):
+        if stack is None or stack.managed == False or isinstance(stack, UnmanagedDockerComposeStack):
             raise ValueError(f"Cannot sync unmanaged stack {name}")
 
-        # stack = self.stacks[name]
         return sync_stack(stack)
