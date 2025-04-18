@@ -2,6 +2,8 @@ import os
 
 import yaml
 
+from kontainer.stacks.stackfile import Stackfile
+
 
 def modify_docker_compose_volumes(file_path, output_path, prefix):
     """Read, modify, and save the docker-compose.yml file with updated volume mounts."""

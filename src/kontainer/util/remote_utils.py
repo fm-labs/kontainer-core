@@ -213,3 +213,19 @@ def exec_ssh_sock_command(sock: paramiko.transport.Transport, command, environme
 
     finally:
         session.close()
+
+
+def exec_remote_command(hostname: str, username:str, cmd: str | list):
+    """
+    Invoke Docker Command via SSH on a Remote Host (Blocking)
+    """
+    ssh_cmd = f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR {username}@{hostname} {cmd}"
+
+    # use paramiko to run ssh command
+    paramiko_ssh = paramiko.SSHClient()
+    paramiko_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    paramiko_ssh.connect(hostname)
+    stdin, stdout, stderr = paramiko_ssh.exec_command(ssh_cmd)
+
+    #errors = stderr.read()
+    return stdout.read()
