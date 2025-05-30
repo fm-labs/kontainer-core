@@ -199,9 +199,9 @@ def _sync_stack_compose_file(stack: ContainerStack) -> str | None:
 
     output_path = os.path.join(settings.KONTAINER_DATA_DIR, stack.project_dir, base_path, "docker-compose.stack.yml")
     #output_path = os.path.join(settings.KONTAINER_DATA_DIR, stack.name + ".stack.yml")
-    volumes_prefix = os.path.join(get_real_app_data_path(), "stacks", stack.name, base_path)
-    modify_docker_compose_volumes(compose_file_path, output_path, volumes_prefix)
-    print(f"Modified docker-compose.yml saved to {output_path}")
+    #@todo volumes_prefix = os.path.join(get_real_app_data_path(), "stacks", stack.name, base_path)
+    #@todo modify_docker_compose_volumes(compose_file_path, output_path, volumes_prefix)
+    #print(f"Modified docker-compose.yml saved to {output_path}")
 
     #stackfile = Stackfile.from_yaml_file(compose_file_path)
     #stackfile.modify_docker_compose_volumes(prefix)
