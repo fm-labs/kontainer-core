@@ -49,6 +49,9 @@ def get_task_status(task_id):
         response['status'] = task.state
         response['root_id'] = task.root_id if hasattr(task, 'root_id') else None
         response['parent_id'] = task.parent_id if hasattr(task, 'parent_id') else None
+        response['progress'] = None
+        response['result'] = None
+
         if task.state == 'PROGRESS':
             response['progress'] = task.info
         elif task.state == 'SUCCESS':

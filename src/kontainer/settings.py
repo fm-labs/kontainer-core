@@ -124,7 +124,7 @@ def get_real_app_data_path():
 
     :return: The real path to the app data directory
     """
-    # KONTAINER_DATA_HOME = os.getenv("KONTAINER_DATA_HOME", None)
+    KONTAINER_DATA_HOME = os.getenv("KONTAINER_DATA_HOME", None)
     # if KONTAINER_DATA_HOME is None or KONTAINER_DATA_HOME == "":
     #     KONTAINER_DATA_VOLUME = os.getenv("KONTAINER_DATA_VOLUME", "kontainer_data")
     #     if KONTAINER_DATA_VOLUME is not None and KONTAINER_DATA_VOLUME != "":
