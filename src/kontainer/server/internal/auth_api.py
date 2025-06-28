@@ -3,7 +3,7 @@ from flask import jsonify, request
 from flask_jwt_extended import create_access_token, get_jwt_identity
 from flask_jwt_extended.view_decorators import jwt_required
 
-from kontainer.admin.auth import validate_admin_credentials_from_file
+from kontainer.admin.auth import validate_admin_credentials
 
 auth_api_bp = flask.Blueprint('auth_api', __name__, url_prefix='/api/auth')
 
@@ -19,7 +19,7 @@ def login():
     try:
         #if not validate_admin_credentials_simple(username, password):
         #    return jsonify(error="Bad username or password"), 401
-        if not validate_admin_credentials_from_file(username, password):
+        if not validate_admin_credentials(username, password):
             return jsonify(error="Bad username or password"), 401
     except Exception as e:
         print(e)

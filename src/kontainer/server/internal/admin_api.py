@@ -4,7 +4,7 @@ import flask
 from flask import jsonify, request
 from flask_jwt_extended.view_decorators import jwt_required
 
-from kontainer.admin.credentials import find_private_keys, write_private_key, private_key_exists, delete_private_key
+from kontainer.admin.keymanager import find_private_keys, write_private_key, private_key_exists, delete_private_key
 from kontainer.admin.registries import list_container_registries, update_container_registry, \
     request_container_registry_login, delete_container_registry
 

@@ -1,12 +1,11 @@
-import hashlib
-
 from flask import request, jsonify, g, abort
-from flask_jwt_extended import verify_jwt_in_request
+#from flask_jwt_extended import verify_jwt_in_request
 
 from kontainer.docker.service import DockerService
 
 
 # Middleware to check API key presence
+# Deprecated: Use JWT instead
 def auth_token_middleware(app):
 
     def __init__(self):
@@ -51,20 +50,20 @@ def auth_token_middleware(app):
         return True
 
 
-# Middleware to check JWT presence
-def check_jwt_middleware(app):
-
-    @app.before_request
-    def before_request():
-        # Bypass JWT check for login route
-        if request.endpoint == "login":
-            return
-
-        try:
-            # Attempt to verify the JWT
-            verify_jwt_in_request()
-        except Exception as e:
-            return jsonify({"error": "Missing or invalid token", "message": str(e)}), 401
+# # Middleware to check JWT presence
+# def check_jwt_middleware(app):
+#
+#     @app.before_request
+#     def before_request():
+#         # Bypass JWT check for login route
+#         if request.endpoint == "login":
+#             return
+#
+#         try:
+#             # Attempt to verify the JWT
+#             verify_jwt_in_request()
+#         except Exception as e:
+#             return jsonify({"error": "Missing or invalid token", "message": str(e)}), 401
 
 
 def docker_service_middleware(app):
@@ -88,3 +87,4 @@ def docker_service_middleware(app):
 
         g.dkr_ctx_id = docker_ctxid
         g.dkr = DockerService(docker_ctxid).dkr
+        return None

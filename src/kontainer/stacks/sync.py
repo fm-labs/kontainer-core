@@ -1,7 +1,7 @@
 import os
 
 from kontainer import settings
-from kontainer.admin.credentials import private_key_exists
+from kontainer.admin.keymanager import private_key_exists
 from kontainer.settings import get_real_app_data_path
 from kontainer.stacks import ContainerStack
 from kontainer.stacks.stackfile import Stackfile
