@@ -224,7 +224,7 @@ class DockerManager:
         return container
 
 
-    def get_container_logs(self, key) -> list[str]:
+    def get_container_logs(self, key, **kwargs) -> list[str]:
         """
         Get Container Logs
 
@@ -234,9 +234,15 @@ class DockerManager:
         if not self.container_exists(key):
             raise ContainerNotFoundError(key)
 
+        container_kwargs = {
+            'stream': False,
+            'tail': 500,
+            'follow': False,
+            'timestamps': True
+        }
         container = self.client.containers.get(key)
         logs = list()
-        log_bytes = container.logs(stream=False, tail=100, follow=False, timestamps=True)
+        log_bytes = container.logs(**container_kwargs, **kwargs)
         for log in log_bytes.decode().split('\n'):
             logs.append(log)
         return logs

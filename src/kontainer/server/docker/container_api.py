@@ -116,8 +116,17 @@ def restart_container(key):
 @container_api_bp.route('/<string:key>/logs', methods=["GET"])
 @jwt_required()
 def get_container_logs(key):
+    kwargs = {}
+    since = request.args.get('since', None)
+    if since:
+        kwargs['since'] = int(since)
+
+    until = request.args.get('until', None)
+    if until:
+        kwargs['until'] = int(until)
+
     try:
-        logs = g.dkr.get_container_logs(key)
+        logs = g.dkr.get_container_logs(key, **kwargs)
         return jsonify(logs)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
