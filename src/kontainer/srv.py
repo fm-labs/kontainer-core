@@ -1,6 +1,8 @@
 from flask import jsonify
 
 from .app import app
+from .server.docker.mcp_api import mcp_api_bp
+from .server.docker.plugins_api import plugins_api_bp
 from .server.internal.admin_api import admin_api_bp
 from .server.internal.auth_api import auth_api_bp
 
@@ -41,6 +43,8 @@ app.register_blueprint(images_api_bp)
 app.register_blueprint(networks_api_bp)
 app.register_blueprint(stacks_api_bp)
 app.register_blueprint(volumes_api_bp)
+app.register_blueprint(plugins_api_bp)
+app.register_blueprint(mcp_api_bp)
 
 # Kubernetes API
 #app.register_blueprint(kube_namespaces_api_bp)

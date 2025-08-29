@@ -53,7 +53,12 @@ def get_dockerhost_for_ctx_id(ctx_id):
 
     # todo: remove this
     if ctx_id == "local" or ctx_id == "default":
-        return "unix://var/run/docker.sock"
+        default_path = "/var/run/docker.sock"
+        # resolve real path if it is a symlink
+        #if os.path.islink(default_path):
+        #    default_path = os.path.realpath(default_path)
+
+        return "unix://" + default_path
     elif ctx_id == "local-tcp":
         return "tcp://localhost:2375"
 

@@ -1,4 +1,6 @@
 from flask import request, jsonify, g, abort
+
+from kontainer.docker.context import get_dockerhost_for_ctx_id
 #from flask_jwt_extended import verify_jwt_in_request
 
 from kontainer.docker.service import DockerService
@@ -86,5 +88,6 @@ def docker_service_middleware(app):
         #     return jsonify({"error": "Invalid X-Docker-Context: must be an integer"}), 400
 
         g.dkr_ctx_id = docker_ctxid
+        g.dkr_host = get_dockerhost_for_ctx_id(docker_ctxid)
         g.dkr = DockerService(docker_ctxid).dkr
         return None

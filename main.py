@@ -20,7 +20,7 @@ if __name__ == '__main__':
     debug = settings.KONTAINER_DEBUG
 
     print(f"KONTAINER_DATA_DIR: {settings.KONTAINER_DATA_DIR}")
-    print(f"KONTAINER_DATA_HOME: {settings.KONTAINER_DATA_HOME}")
+    #print(f"KONTAINER_DATA_HOME: {settings.KONTAINER_DATA_HOME}")
     print(f"Starting webserver on port {port}")
 
     app.run(debug=debug, port=port, host=host)
