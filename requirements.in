@@ -1,0 +1,9 @@
+ruff
+ty
+boto
+celery
+docker
+flask_cors
+flask
+flask_jwt_extended
+pyyaml
