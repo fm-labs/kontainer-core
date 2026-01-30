@@ -28,12 +28,35 @@ curl -s https://raw.githubusercontent.com/fm-labs/kontainer-core/main/docker_run
 
 ## Development
 
-Uses [poetry](https://python-poetry.org/) for dependency management.
+Uses [uv](https://astral.sh/uv) for dependency management.
 
 ```bash
-poetry install
-export KONTAINER_DATA_DIR=./data
-peotry run python ./main.py
+uv pip install --requirement requirements.in
+uv run python ./main.py
+```
+
+Uses [ruff](https://astral.sh/ruff) as Python Lint
+
+> Install Ruff as Tool
+```bash
+uv tool install ruff
+```
+
+> Using Ruff as Python Lint
+```bash
+uvx ruff check --fix
+```
+
+Uses [ty](https://astral.sh/ty) as Python Type Checker
+
+> Install TY as Tool
+```bash
+uv toll install ty
+```
+
+> Using TY as
+```bash
+uvx ty check --fix
 ```
 
 The kontainer REST api server is served at `http://localhost:5000/` by default.
